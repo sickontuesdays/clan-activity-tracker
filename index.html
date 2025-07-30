@@ -434,6 +434,11 @@
                 const response = await makeAPIRequest(endpoint);
                 return response.activities || [];
             } catch (error) {
+                // Handle common privacy errors gracefully
+                if (error.message.includes('private') || error.message.includes('No peeking')) {
+                    console.log(`Profile is private for character ${characterId}, skipping...`);
+                    return [];
+                }
                 console.error(`Failed to get activities for character ${characterId}:`, error);
                 return [];
             }
@@ -687,7 +692,11 @@
                         }
                     }
                 } catch (error) {
-                    console.error(`Error getting profile for member ${member.destinyUserInfo.displayName}:`, error);
+                    if (error.message.includes('private') || error.message.includes('No peeking')) {
+                        console.log(`Profile is private for member ${member.destinyUserInfo.displayName}, skipping...`);
+                    } else {
+                        console.error(`Error getting profile for member ${member.destinyUserInfo.displayName}:`, error);
+                    }
                 }
             }
 
@@ -711,6 +720,7 @@
             const sortedActivities = Array.from(uniqueActivities.values())
                 .sort((a, b) => new Date(b.period) - new Date(a.period));
             
+            console.log(`Collected ${sortedActivities.length} activities from ${clanMembers.length} clan members`);
             return sortedActivities;
         }
 
