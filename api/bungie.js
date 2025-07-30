@@ -30,6 +30,8 @@ module.exports = async (req, res) => {
     }
 
     try {
+        console.log('Making request to Bungie API:', `https://www.bungie.net/Platform${endpoint}`);
+        
         const response = await fetch(`https://www.bungie.net/Platform${endpoint}`, {
             headers: {
                 'X-API-Key': API_KEY,
@@ -37,18 +39,24 @@ module.exports = async (req, res) => {
             }
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
+        console.log('Bungie API response status:', response.status);
 
         const data = await response.json();
+        console.log('Bungie API response:', JSON.stringify(data, null, 2));
+
+        // Don't throw error for non-200 status codes, just return the data
+        // Let the client handle Bungie API errors
         res.status(200).json(data);
         
     } catch (error) {
         console.error('API request failed:', error);
+        console.error('Error details:', error.message);
+        console.error('Stack trace:', error.stack);
+        
         res.status(500).json({ 
             error: 'Failed to fetch data from Bungie API',
-            details: error.message 
+            details: error.message,
+            endpoint: endpoint
         });
     }
 };
