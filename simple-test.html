@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #fff;
+        }
+        button {
+            background: #f7931e;
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #e6840e;
+        }
+        pre {
+            background: #333;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        .error {
+            color: #ff6666;
+        }
+        .success {
+            color: #66ff66;
+        }
+    </style>
+</head>
+<body>
+    <h1>Simple API Test</h1>
+    <p>Testing if the /api/bungie endpoint exists and works</p>
+    
+    <button onclick="testEndpoint()">Test API Endpoint</button>
+    <button onclick="testManifest()">Test Bungie Manifest</button>
+    
+    <div id="results"></div>
+
+    <script>
+        async function testEndpoint() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>Testing API Endpoint...</h3>';
+            
+            try {
+                console.log('Testing /api/bungie endpoint...');
+                
+                // Test 1: Just hit the endpoint with no parameters
+                results.innerHTML += '<p>Test 1: Hitting /api/bungie with no params (should get 400 error)</p>';
+                const response1 = await fetch('/api/bungie');
+                const text1 = await response1.text();
+                
+                results.innerHTML += `<p>Status: ${response1.status}</p>`;
+                results.innerHTML += `<pre>${text1}</pre>`;
+                
+                if (response1.status === 400) {
+                    results.innerHTML += '<p class="success">✅ API endpoint exists! (400 is expected without params)</p>';
+                } else if (response1.status === 404) {
+                    results.innerHTML += '<p class="error">❌ API endpoint not found - check deployment</p>';
+                    return;
+                }
+                
+                // Test 2: Test with a simple endpoint
+                results.innerHTML += '<hr><p>Test 2: Testing with a basic endpoint</p>';
+                const response2 = await fetch('/api/bungie?endpoint=/');
+                const text2 = await response2.text();
+                
+                results.innerHTML += `<p>Status: ${response2.status}</p>`;
+                results.innerHTML += `<pre>${text2.substring(0, 500)}${text2.length > 500 ? '...' : ''}</pre>`;
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+
+        async function testManifest() {
+            const results = document.getElementById('results');
+            results.innerHTML = '<h3>Testing Bungie Manifest...</h3>';
+            
+            try {
+                console.log('Testing Bungie Manifest endpoint...');
+                
+                const response = await fetch('/api/bungie?endpoint=/Destiny2/Manifest/');
+                const text = await response.text();
+                
+                results.innerHTML += `<p>Status: ${response.status}</p>`;
+                results.innerHTML += `<pre>${text.substring(0, 1000)}${text.length > 1000 ? '...' : ''}</pre>`;
+                
+                if (response.status === 200) {
+                    try {
+                        const data = JSON.parse(text);
+                        if (data.Response) {
+                            results.innerHTML += '<p class="success">✅ Bungie API is working!</p>';
+                        }
+                    } catch (e) {
+                        results.innerHTML += `<p class="error">❌ Could not parse JSON response</p>`;
+                    }
+                } else {
+                    results.innerHTML += `<p class="error">❌ Bungie API call failed</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Error: ${error.message}</p>`;
+            }
+        }
+    </script>
+</body>
+</html>
