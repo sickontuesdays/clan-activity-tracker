@@ -1,15 +1,9 @@
 {
   "functions": {
-    "api/bungie.js": {
+    "api/**/*.js": {
       "maxDuration": 30
     }
   },
-  "rewrites": [
-    {
-      "source": "/api/bungie",
-      "destination": "/api/bungie.js"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
