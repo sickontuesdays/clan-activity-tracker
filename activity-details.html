@@ -233,13 +233,13 @@
             color: #aaa;
         }
 
-        .weapons-section {
+        .weapons-section, .medals-section, .detailed-stats-section {
             margin-top: 15px;
             padding-top: 15px;
             border-top: 1px solid #333;
         }
 
-        .weapons-title {
+        .weapons-title, .medals-title, .detailed-stats-title {
             color: #f7931e;
             font-size: 1.1em;
             margin-bottom: 10px;
@@ -274,19 +274,6 @@
             font-size: 0.8em;
         }
 
-        .medals-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-        }
-
-        .medals-title {
-            color: #f7931e;
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
         .medals-grid {
             display: flex;
             flex-wrap: wrap;
@@ -300,19 +287,6 @@
             border-radius: 12px;
             font-size: 0.8em;
             color: #ffd700;
-        }
-
-        .detailed-stats-section {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-        }
-
-        .detailed-stats-title {
-            color: #f7931e;
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            font-weight: bold;
         }
 
         .detailed-stats-grid {
@@ -487,10 +461,15 @@
 
         async function makeAPIRequest(endpoint) {
             try {
+                console.log('Making API request to:', `/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
                 const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
                 
+                console.log('Response status:', response.status);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Response error text:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
                 }
 
                 const data = await response.json();

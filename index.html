@@ -378,13 +378,20 @@
 
         async function makeAPIRequest(endpoint) {
             try {
+                console.log('Making API request to:', `/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
                 const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
                 
+                console.log('Response status:', response.status);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Response error text:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
                 }
 
                 const data = await response.json();
+                console.log('API Response:', data);
                 
                 if (data.error) {
                     throw new Error(data.error);
