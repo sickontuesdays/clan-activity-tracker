@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>User Clan Lookup Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #fff;
+        }
+        button {
+            background: #f7931e;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #e6840e;
+        }
+        input {
+            padding: 8px;
+            width: 300px;
+            margin: 10px 0;
+            border-radius: 4px;
+            border: 1px solid #444;
+            background: #333;
+            color: #fff;
+        }
+        pre {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #ff6666;
+        }
+        .success {
+            color: #66ff66;
+        }
+        .info {
+            color: #66ccff;
+        }
+        .test-group {
+            border: 1px solid #444;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .step {
+            background: #2a2a3e;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #f7931e;
+        }
+    </style>
+</head>
+<body>
+    <h1>User → Clan Lookup Test</h1>
+    
+    <div class="test-group">
+        <h3>Step 1: Search for User</h3>
+        <input type="text" id="usernameInput" placeholder="Enter username (e.g., Rhino#0668)" value="Rhino#0668">
+        <br>
+        <button onclick="searchUser()">Search User</button>
+        <button onclick="searchUser('Rhino')">Search "Rhino" only</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        async function makeAPIRequest(endpoint) {
+            try {
+                console.log('Making API request to:', `/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
+                const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
+                
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response error text:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                return data;
+            } catch (error) {
+                console.error('API Request failed:', error);
+                throw error;
+            }
+        }
+
+        async function searchUser(customName = null) {
+            const username = customName || document.getElementById('usernameInput').value;
+            if (!username) {
+                alert('Please enter a username');
+                return;
+            }
+
+            const results = document.getElementById('results');
+            results.innerHTML = `<div class="step"><h4>Step 1: Searching for user "${username}"</h4></div>`;
+            
+            try {
+                // Step 1: Search for the user across all platforms
+                const searchEndpoint = `/Destiny2/SearchDestinyPlayer/-1/${encodeURIComponent(username)}/`;
+                console.log('Searching with endpoint:', searchEndpoint);
+                
+                const searchData = await makeAPIRequest(searchEndpoint);
+                
+                if (searchData.ErrorCode === 1 && searchData.Response && searchData.Response.length > 0) {
+                    results.innerHTML += `<p class="success">✅ Found ${searchData.Response.length} result(s)</p>`;
+                    
+                    // Display all found users
+                    searchData.Response.forEach((user, index) => {
+                        results.innerHTML += `
+                            <div class="step">
+                                <h4>User ${index + 1}:</h4>
+                                <p><strong>Display Name:</strong> ${user.displayName}</p>
+                                <p><strong>Membership Type:</strong> ${getMembershipTypeName(user.membershipType)}</p>
+                                <p><strong>Membership ID:</strong> ${user.membershipId}</p>
+                                <button onclick="getUserClans('${user.membershipType}', '${user.membershipId}', '${user.displayName}')">Get Clans for This User</button>
+                            </div>
+                        `;
+                    });
+                } else {
+                    results.innerHTML += `<p class="error">❌ User not found</p>`;
+                    results.innerHTML += `<p>Error Code: ${searchData.ErrorCode}</p>`;
+                    results.innerHTML += `<p>Message: ${searchData.Message}</p>`;
+                    
+                    // Try alternative search without the #number
+                    if (username.includes('#')) {
+                        const nameOnly = username.split('#')[0];
+                        results.innerHTML += `<p class="info">Trying search with just "${nameOnly}"...</p>`;
+                        setTimeout(() => searchUser(nameOnly), 1000);
+                    }
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Error searching for user: ${error.message}</p>`;
+            }
+        }
+
+        async function getUserClans(membershipType, membershipId, displayName) {
+            const results = document.getElementById('results');
+            results.innerHTML += `<div class="step"><h4>Step 2: Getting clan memberships for ${displayName}</h4></div>`;
+            
+            try {
+                // Get user's group memberships (clans)
+                const groupsEndpoint = `/GroupV2/User/${membershipType}/${membershipId}/0/1/`;
+                console.log('Getting groups with endpoint:', groupsEndpoint);
+                
+                const groupsData = await makeAPIRequest(groupsEndpoint);
+                
+                if (groupsData.ErrorCode === 1 && groupsData.Response && groupsData.Response.results) {
+                    const clans = groupsData.Response.results.filter(group => group.group.groupType === 1);
+                    
+                    if (clans.length > 0) {
+                        results.innerHTML += `<p class="success">✅ Found ${clans.length} clan(s)</p>`;
+                        
+                        clans.forEach((clanMembership, index) => {
+                            const clan = clanMembership.group;
+                            results.innerHTML += `
+                                <div class="step">
+                                    <h4>Clan ${index + 1}: ${clan.name}</h4>
+                                    <p><strong>Clan Name:</strong> "${clan.name}"</p>
+                                    <p><strong>Clan Tag:</strong> ${clan.clanInfo?.clanCallsign || 'None'}</p>
+                                    <p><strong>Clan ID:</strong> ${clan.groupId}</p>
+                                    <p><strong>Member Count:</strong> ${clan.memberCount}</p>
+                                    <p><strong>Creation Date:</strong> ${new Date(clan.creationDate).toLocaleDateString()}</p>
+                                    <button onclick="testClanByName('${clan.name}')">Test Clan Search</button>
+                                    <button onclick="getClanMembers('${clan.groupId}')">Get Clan Members</button>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        results.innerHTML += `<p class="error">❌ No clans found for this user</p>`;
+                    }
+                } else {
+                    results.innerHTML += `<p class="error">❌ Could not get clan information</p>`;
+                    results.innerHTML += `<p>Error Code: ${groupsData.ErrorCode}</p>`;
+                    results.innerHTML += `<p>Message: ${groupsData.Message}</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Error getting clans: ${error.message}</p>`;
+            }
+        }
+
+        async function testClanByName(clanName) {
+            const results = document.getElementById('results');
+            results.innerHTML += `<div class="step"><h4>Step 3: Testing clan search with name "${clanName}"</h4></div>`;
+            
+            try {
+                const endpoint = `/GroupV2/Name/${encodeURIComponent(clanName)}/1/`;
+                console.log('Testing clan search with endpoint:', endpoint);
+                
+                const data = await makeAPIRequest(endpoint);
+                
+                if (data.ErrorCode === 1 && data.Response && data.Response.detail) {
+                    results.innerHTML += `<p class="success">✅ Clan search successful!</p>`;
+                    results.innerHTML += `<p><strong>Found clan:</strong> ${data.Response.detail.name}</p>`;
+                    results.innerHTML += `<p class="info">This is the exact name format to use in your main app!</p>`;
+                } else {
+                    results.innerHTML += `<p class="error">❌ Clan search failed</p>`;
+                    results.innerHTML += `<p>Error Code: ${data.ErrorCode}</p>`;
+                    results.innerHTML += `<p>Message: ${data.Message}</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Error testing clan search: ${error.message}</p>`;
+            }
+        }
+
+        async function getClanMembers(groupId) {
+            const results = document.getElementById('results');
+            results.innerHTML += `<div class="step"><h4>Step 4: Getting clan members for group ${groupId}</h4></div>`;
+            
+            try {
+                const endpoint = `/GroupV2/${groupId}/Members/`;
+                console.log('Getting clan members with endpoint:', endpoint);
+                
+                const data = await makeAPIRequest(endpoint);
+                
+                if (data.ErrorCode === 1 && data.Response && data.Response.results) {
+                    results.innerHTML += `<p class="success">✅ Found ${data.Response.results.length} clan members</p>`;
+                    
+                    // Show first 5 members as example
+                    const firstFive = data.Response.results.slice(0, 5);
+                    firstFive.forEach((member, index) => {
+                        results.innerHTML += `
+                            <p><strong>Member ${index + 1}:</strong> ${member.destinyUserInfo.displayName} (${getMembershipTypeName(member.destinyUserInfo.membershipType)})</p>
+                        `;
+                    });
+                    
+                    if (data.Response.results.length > 5) {
+                        results.innerHTML += `<p>... and ${data.Response.results.length - 5} more members</p>`;
+                    }
+                    
+                    results.innerHTML += `<p class="success">🎉 Your main app should work now with the clan name found above!</p>`;
+                } else {
+                    results.innerHTML += `<p class="error">❌ Could not get clan members</p>`;
+                    results.innerHTML += `<p>Error Code: ${data.ErrorCode}</p>`;
+                    results.innerHTML += `<p>Message: ${data.Message}</p>`;
+                }
+                
+            } catch (error) {
+                results.innerHTML += `<p class="error">❌ Error getting clan members: ${error.message}</p>`;
+            }
+        }
+
+        function getMembershipTypeName(type) {
+            const types = {
+                1: 'Xbox',
+                2: 'PlayStation',
+                3: 'Steam',
+                4: 'Blizzard',
+                5: 'Stadia',
+                6: 'Epic Games',
+                10: 'Demon',
+                254: 'BungieNext'
+            };
+            return types[type] || `Unknown (${type})`;
+        }
+    </script>
+</body>
+</html>
