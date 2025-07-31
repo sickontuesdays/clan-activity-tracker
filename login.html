@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - S!ck on Tuesdays!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 40px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 15px;
+            border: 1px solid #444;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-size: 2.5em;
+            color: #f7931e;
+            font-weight: bold;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .subtitle {
+            color: #cccccc;
+            font-size: 1.1em;
+            margin-bottom: 30px;
+        }
+
+        .login-box {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 30px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .login-title {
+            font-size: 1.5em;
+            color: #f7931e;
+            margin-bottom: 20px;
+        }
+
+        .login-description {
+            color: #aaa;
+            margin-bottom: 25px;
+            line-height: 1.5;
+        }
+
+        .bungie-login-btn {
+            background: linear-gradient(45deg, #f7931e, #e6840e);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+            box-shadow: 0 4px 15px rgba(247, 147, 30, 0.3);
+        }
+
+        .bungie-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(247, 147, 30, 0.4);
+        }
+
+        .benefits {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            margin-bottom: 20px;
+        }
+
+        .benefits-title {
+            color: #f7931e;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+        }
+
+        .benefits-list {
+            text-align: left;
+            color: #ccc;
+        }
+
+        .benefits-list li {
+            margin-bottom: 8px;
+            padding-left: 20px;
+            position: relative;
+        }
+
+        .benefits-list li:before {
+            content: "✓";
+            color: #00ff00;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+
+        .privacy-note {
+            background: rgba(0, 100, 200, 0.1);
+            border: 1px solid #0066cc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #66ccff;
+        }
+
+        .back-link {
+            color: #f7931e;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: color 0.3s ease;
+        }
+
+        .back-link:hover {
+            color: #fff;
+        }
+
+        .loading {
+            display: none;
+            color: #f7931e;
+            margin-top: 20px;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ff6666;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">S!ck on Tuesdays!</div>
+        <div class="subtitle">Enhanced Clan Activity Tracker</div>
+
+        <div class="login-box">
+            <div class="login-title">Unlock Full Features</div>
+            <div class="login-description">
+                Login with your Bungie account to access detailed activity data and see private statistics from other opted-in clan members.
+            </div>
+            
+            <button class="bungie-login-btn" onclick="startOAuth()">
+                Login with Bungie.net
+            </button>
+            
+            <div class="loading" id="loading">
+                Redirecting to Bungie.net...
+            </div>
+        </div>
+
+        <div class="benefits">
+            <div class="benefits-title">What you'll get with login:</div>
+            <ul class="benefits-list">
+                <li>View detailed activity statistics from other opted-in members</li>
+                <li>See comprehensive weapon usage and performance data</li>
+                <li>Access full match history and PGCR details</li>
+                <li>View private profiles of clan members who have opted in</li>
+                <li>Enhanced clan performance analytics</li>
+            </ul>
+        </div>
+
+        <div class="privacy-note">
+            <strong>Privacy Guarantee:</strong> Only clan members who opt-in can see enhanced data. If you don't opt-in, you'll only see basic public information. Your data is only shared with other opted-in clan members.
+        </div>
+
+        <div class="error" id="error"></div>
+
+        <a href="index.html" class="back-link">← Back to Public View</a>
+    </div>
+
+    <script>
+        // OAuth configuration
+        const OAUTH_CONFIG = {
+            CLIENT_ID: 'YOUR_BUNGIE_APP_ID', // Replace with your Bungie app ID
+            REDIRECT_URI: window.location.origin + '/oauth-callback.html',
+            BUNGIE_AUTH_URL: 'https://www.bungie.net/en/OAuth/Authorize',
+            SCOPE: 'ReadUserData,ReadDestinyInventoryAndVault'
+        };
+
+        function startOAuth() {
+            try {
+                // Show loading
+                document.getElementById('loading').style.display = 'block';
+                
+                // Build OAuth URL
+                const params = new URLSearchParams({
+                    client_id: OAUTH_CONFIG.CLIENT_ID,
+                    response_type: 'code',
+                    redirect_uri: OAUTH_CONFIG.REDIRECT_URI,
+                    scope: OAUTH_CONFIG.SCOPE,
+                    state: generateState()
+                });
+
+                // Store state for verification
+                localStorage.setItem('oauth_state', params.get('state'));
+                
+                // Redirect to Bungie OAuth
+                const authUrl = `${OAUTH_CONFIG.BUNGIE_AUTH_URL}?${params.toString()}`;
+                console.log('Redirecting to:', authUrl);
+                
+                window.location.href = authUrl;
+                
+            } catch (error) {
+                console.error('OAuth start failed:', error);
+                showError('Failed to start login process. Please try again.');
+            }
+        }
+
+        function generateState() {
+            // Generate a random state for CSRF protection
+            return Math.random().toString(36).substring(2, 15) + 
+                   Math.random().toString(36).substring(2, 15);
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Check for error parameters in URL (if redirected back from OAuth with error)
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const error = urlParams.get('error');
+            const errorDescription = urlParams.get('error_description');
+            
+            if (error) {
+                showError(`Login failed: ${errorDescription || error}`);
+            }
+        });
+    </script>
+</body>
+</html>

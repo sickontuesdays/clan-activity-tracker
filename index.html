@@ -31,6 +31,7 @@
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             border: 1px solid #333;
+            position: relative;
         }
 
         .header h1 {
@@ -43,6 +44,101 @@
         .header p {
             color: #cccccc;
             font-size: 1.1em;
+        }
+
+        .user-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .login-btn, .logout-btn {
+            background: rgba(247, 147, 30, 0.2);
+            border: 1px solid #f7931e;
+            color: #f7931e;
+            padding: 8px 16px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .login-btn:hover, .logout-btn:hover {
+            background: rgba(247, 147, 30, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .user-info {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .access-level {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 25px;
+            border-left: 4px solid #f7931e;
+        }
+
+        .access-level.public {
+            border-left-color: #888;
+        }
+
+        .access-level.private {
+            border-left-color: #00ff00;
+        }
+
+        .access-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .access-description {
+            font-size: 0.9em;
+            color: #aaa;
+        }
+
+        .upgrade-prompt {
+            background: linear-gradient(45deg, rgba(247, 147, 30, 0.1), rgba(0, 255, 0, 0.1));
+            border: 1px solid #f7931e;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .upgrade-title {
+            color: #f7931e;
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .upgrade-description {
+            color: #ccc;
+            margin-bottom: 15px;
+        }
+
+        .upgrade-btn {
+            background: linear-gradient(45deg, #f7931e, #00ff00);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .upgrade-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(247, 147, 30, 0.4);
         }
 
         .stats-bar {
@@ -58,6 +154,19 @@
             border-radius: 8px;
             padding: 15px;
             text-align: center;
+            position: relative;
+        }
+
+        .stat-card.limited {
+            opacity: 0.6;
+        }
+
+        .stat-card.limited::after {
+            content: "🔒";
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            font-size: 0.8em;
         }
 
         .stat-value {
@@ -146,6 +255,24 @@
             border-color: #f7931e;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(247, 147, 30, 0.3);
+        }
+
+        .activity-item.limited {
+            opacity: 0.7;
+            border-style: dashed;
+        }
+
+        .activity-item.limited::before {
+            content: "Limited Data - Login for Full Details";
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 255, 0, 0.2);
+            color: #ffff00;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 0.7em;
+            border: 1px solid #ffff00;
         }
 
         .activity-header {
@@ -253,6 +380,12 @@
             color: #00ff00;
         }
 
+        .opted-in-member {
+            background: rgba(0, 255, 255, 0.2);
+            border-color: #00ffff;
+            color: #00ffff;
+        }
+
         .stats-preview {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -284,6 +417,12 @@
         }
 
         @media (max-width: 768px) {
+            .user-controls {
+                position: static;
+                justify-content: center;
+                margin-top: 15px;
+            }
+            
             .activity-controls {
                 flex-direction: column;
                 gap: 10px;
@@ -305,22 +444,41 @@
         <div class="header">
             <h1>S!ck on Tuesdays!</h1>
             <p>Clan Activity Tracker & Statistics</p>
+            
+            <div class="user-controls">
+                <div id="userInfo" class="user-info" style="display: none;"></div>
+                <a href="login.html" id="loginBtn" class="login-btn">Enhanced Access</a>
+                <button id="logoutBtn" class="logout-btn" style="display: none;" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div id="accessLevel" class="access-level public">
+            <div class="access-title">Public Access Mode</div>
+            <div class="access-description">You're viewing public clan data only. Login for enhanced features and private member data.</div>
+        </div>
+
+        <div id="upgradePrompt" class="upgrade-prompt">
+            <div class="upgrade-title">🔓 Unlock Enhanced Features</div>
+            <div class="upgrade-description">
+                Login to see detailed statistics from opted-in clan members and access comprehensive activity data.
+            </div>
+            <a href="login.html" class="upgrade-btn">Login with Bungie.net</a>
         </div>
 
         <div id="statsBar" class="stats-bar" style="display: none;">
-            <div class="stat-card">
+            <div class="stat-card" id="totalActivitiesCard">
                 <span class="stat-value" id="totalActivities">0</span>
                 <span class="stat-label">Activities (24h)</span>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" id="activePlayersCard">
                 <span class="stat-value" id="activePlayers">0</span>
                 <span class="stat-label">Active Players</span>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" id="totalKillsCard">
                 <span class="stat-value" id="totalKills">0</span>
                 <span class="stat-label">Total Kills</span>
             </div>
-            <div class="stat-card">
+            <div class="stat-card" id="avgKDCard">
                 <span class="stat-value" id="avgKD">0.00</span>
                 <span class="stat-label">Average K/D</span>
             </div>
@@ -335,6 +493,7 @@
         <div id="activityControls" class="activity-controls" style="display: none;">
             <div class="activity-count">
                 Showing <span id="shownCount">0</span> of <span id="totalCount">0</span> activities
+                <span id="dataLevel" style="color: #888;"></span>
             </div>
             <button id="loadMoreBtn" class="load-more-btn">Load More</button>
         </div>
@@ -352,12 +511,15 @@
         };
 
         // Global variables
+        let userSession = null;
         let clanData = null;
         let clanMembers = [];
         let clanMemberIds = new Set();
+        let optedInMembers = new Set();
         let allActivities = [];
         let displayedActivities = [];
         let currentPage = 0;
+        let isLoggedIn = false;
 
         // Utility functions
         function showError(message) {
@@ -376,32 +538,111 @@
             document.getElementById('activities').style.display = 'block';
         }
 
-        async function makeAPIRequest(endpoint) {
+        function updateAccessLevel() {
+            const accessLevel = document.getElementById('accessLevel');
+            const upgradePrompt = document.getElementById('upgradePrompt');
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const userInfo = document.getElementById('userInfo');
+
+            if (isLoggedIn && userSession) {
+                accessLevel.className = 'access-level private';
+                accessLevel.innerHTML = `
+                    <div class="access-title">Enhanced Access Mode</div>
+                    <div class="access-description">You have access to detailed data from ${optedInMembers.size} opted-in clan members.</div>
+                `;
+                upgradePrompt.style.display = 'none';
+                loginBtn.style.display = 'none';
+                logoutBtn.style.display = 'inline-block';
+                userInfo.style.display = 'block';
+                userInfo.textContent = `Welcome, ${userSession.displayName}`;
+            } else {
+                accessLevel.className = 'access-level public';
+                accessLevel.innerHTML = `
+                    <div class="access-title">Public Access Mode</div>
+                    <div class="access-description">You're viewing public clan data only. Login for enhanced features and private member data.</div>
+                `;
+                upgradePrompt.style.display = 'block';
+                loginBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                userInfo.style.display = 'none';
+            }
+        }
+
+        async function checkUserSession() {
             try {
-                console.log('Making API request to:', `/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
-                const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
-                
-                console.log('Response status:', response.status);
-                console.log('Response headers:', [...response.headers.entries()]);
-                
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    console.error('Response error text:', errorText);
-                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                const response = await fetch('/api/check-session');
+                if (response.ok) {
+                    userSession = await response.json();
+                    isLoggedIn = true;
+                    
+                    // Get opted-in members list
+                    const optedInResponse = await fetch('/api/opted-in-members');
+                    if (optedInResponse.ok) {
+                        const optedInData = await optedInResponse.json();
+                        optedInMembers = new Set(optedInData.memberIds);
+                    }
                 }
+            } catch (error) {
+                console.log('No valid session found');
+                isLoggedIn = false;
+            }
+            
+            updateAccessLevel();
+        }
 
-                const data = await response.json();
-                console.log('API Response:', data);
+        async function logout() {
+            try {
+                await fetch('/api/logout', { method: 'POST' });
+                userSession = null;
+                isLoggedIn = false;
+                optedInMembers.clear();
+                updateAccessLevel();
                 
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                // Reload data with public access only
+                location.reload();
+            } catch (error) {
+                console.error('Logout failed:', error);
+            }
+        }
 
-                if (data.ErrorCode !== 1) {
-                    throw new Error(`API Error: ${data.Message}`);
+        async function makeAPIRequest(endpoint, useAuth = false) {
+            try {
+                const headers = {};
+                
+                if (useAuth && isLoggedIn) {
+                    // Use authenticated endpoint for private data
+                    const response = await fetch(`/api/bungie-auth?endpoint=${encodeURIComponent(endpoint)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    if (data.ErrorCode !== 1) {
+                        throw new Error(`API Error: ${data.Message}`);
+                    }
+                    return data.Response;
+                } else {
+                    // Use public endpoint
+                    const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
+                    const data = await response.json();
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+                    if (data.ErrorCode !== 1) {
+                        throw new Error(`API Error: ${data.Message}`);
+                    }
+                    return data.Response;
                 }
-
-                return data.Response;
             } catch (error) {
                 console.error('API Request failed:', error);
                 throw error;
@@ -431,10 +672,12 @@
         async function getActivityHistory(membershipType, membershipId, characterId, count = 50) {
             try {
                 const endpoint = `/Destiny2/${membershipType}/Account/${membershipId}/Character/${characterId}/Stats/Activities/?count=${count}&mode=0&page=0`;
-                const response = await makeAPIRequest(endpoint);
+                
+                // Try authenticated request first if user is logged in and this member is opted-in
+                const useAuth = isLoggedIn && optedInMembers.has(membershipId);
+                const response = await makeAPIRequest(endpoint, useAuth);
                 return response.activities || [];
             } catch (error) {
-                // Handle common privacy errors gracefully
                 if (error.message.includes('private') || error.message.includes('No peeking')) {
                     console.log(`Profile is private for character ${characterId}, skipping...`);
                     return [];
@@ -485,10 +728,10 @@
             return activityDate >= twentyFourHoursAgo;
         }
 
-        async function getActivityDetails(instanceId) {
+        async function getActivityDetails(instanceId, hasPrivateAccess = false) {
             try {
                 const endpoint = `/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`;
-                const response = await makeAPIRequest(endpoint);
+                const response = await makeAPIRequest(endpoint, hasPrivateAccess);
                 return response;
             } catch (error) {
                 console.error(`Failed to get activity details for ${instanceId}:`, error);
@@ -502,11 +745,14 @@
             
             let totalKills = 0;
             let totalDeaths = 0;
+            let hasLimitedData = false;
             
             allActivities.forEach(activity => {
                 if (activity.values) {
                     totalKills += activity.values.kills ? activity.values.kills.basic.value : 0;
                     totalDeaths += activity.values.deaths ? activity.values.deaths.basic.value : 0;
+                } else {
+                    hasLimitedData = true;
                 }
             });
 
@@ -516,6 +762,17 @@
             document.getElementById('activePlayers').textContent = activePlayers;
             document.getElementById('totalKills').textContent = totalKills.toLocaleString();
             document.getElementById('avgKD').textContent = avgKD;
+
+            // Add limited data indicators if not logged in
+            const cards = ['totalActivitiesCard', 'activePlayersCard', 'totalKillsCard', 'avgKDCard'];
+            cards.forEach(cardId => {
+                const card = document.getElementById(cardId);
+                if (!isLoggedIn && hasLimitedData) {
+                    card.classList.add('limited');
+                } else {
+                    card.classList.remove('limited');
+                }
+            });
         }
 
         function updateActivityControls() {
@@ -524,6 +781,13 @@
             
             document.getElementById('totalCount').textContent = totalCount;
             document.getElementById('shownCount').textContent = shownCount;
+            
+            const dataLevel = document.getElementById('dataLevel');
+            if (!isLoggedIn) {
+                dataLevel.textContent = '(Public data only)';
+            } else {
+                dataLevel.textContent = `(${optedInMembers.size} opted-in members)`;
+            }
             
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             loadMoreBtn.disabled = shownCount >= totalCount;
@@ -539,8 +803,9 @@
             }
 
             const activityDetailsPromises = activities.map(async (activity) => {
-                const pgcr = await getActivityDetails(activity.activityDetails.instanceId);
-                return { activity, pgcr };
+                const hasPrivateAccess = isLoggedIn && optedInMembers.has(activity.memberInfo.membershipId);
+                const pgcr = await getActivityDetails(activity.activityDetails.instanceId, hasPrivateAccess);
+                return { activity, pgcr, hasPrivateAccess };
             });
 
             const activityDetails = await Promise.allSettled(activityDetailsPromises);
@@ -548,22 +813,26 @@
             const activityHTML = activityDetails.map((result, index) => {
                 if (result.status === 'rejected') return '';
                 
-                const { activity, pgcr } = result.value;
+                const { activity, pgcr, hasPrivateAccess } = result.value;
                 const isComplete = activity.values && activity.values.completionReason && activity.values.completionReason.basic.value === 0;
+                const isLimitedData = !hasPrivateAccess && !activity.values;
                 
                 let fireteamMembers = [activity.memberInfo.displayName];
                 let clanMembersInFireteam = clanMemberIds.has(activity.memberInfo.membershipId) ? 1 : 0;
+                let optedInMembersInFireteam = 0;
                 
                 if (pgcr && pgcr.entries) {
                     fireteamMembers = pgcr.entries.map(entry => ({
                         name: entry.player.destinyUserInfo.displayName,
-                        isClanMember: clanMemberIds.has(entry.player.destinyUserInfo.membershipId)
+                        isClanMember: clanMemberIds.has(entry.player.destinyUserInfo.membershipId),
+                        isOptedIn: optedInMembers.has(entry.player.destinyUserInfo.membershipId)
                     }));
                     clanMembersInFireteam = fireteamMembers.filter(m => m.isClanMember).length;
+                    optedInMembersInFireteam = fireteamMembers.filter(m => m.isOptedIn).length;
                 }
                 
                 return `
-                    <div class="activity-item" onclick="openActivityDetails('${activity.activityDetails.instanceId}')">
+                    <div class="activity-item ${isLimitedData ? 'limited' : ''}" onclick="openActivityDetails('${activity.activityDetails.instanceId}')">
                         <div class="activity-header">
                             <div class="activity-info">
                                 <div class="activity-name">
@@ -592,7 +861,7 @@
                             </div>
                         </div>
                         
-                        ${activity.values ? `
+                        ${activity.values && !isLimitedData ? `
                         <div class="stats-preview">
                             ${activity.values.kills ? `
                             <div class="stat-item">
@@ -619,15 +888,25 @@
                             </div>
                             ` : ''}
                         </div>
+                        ` : isLimitedData ? `
+                        <div class="stats-preview">
+                            <div class="stat-item">
+                                <span class="stat-value-small">🔒</span>
+                                <span class="stat-label-small">Login Required</span>
+                            </div>
+                        </div>
                         ` : ''}
                         
                         <div class="fireteam">
                             <div class="fireteam-title">Fireteam Members (${fireteamMembers.length}):</div>
                             <div class="fireteam-members">
                                 ${Array.isArray(fireteamMembers) ? 
-                                    fireteamMembers.slice(0, 6).map(member => 
-                                        `<div class="member-tag ${member.isClanMember ? 'clan-member' : ''}">${member.name || member}</div>`
-                                    ).join('') + (fireteamMembers.length > 6 ? '<div class="member-tag">+' + (fireteamMembers.length - 6) + ' more</div>' : '')
+                                    fireteamMembers.slice(0, 6).map(member => {
+                                        let className = 'member-tag';
+                                        if (member.isOptedIn) className += ' opted-in-member';
+                                        else if (member.isClanMember) className += ' clan-member';
+                                        return `<div class="${className}">${member.name || member}</div>`;
+                                    }).join('') + (fireteamMembers.length > 6 ? '<div class="member-tag">+' + (fireteamMembers.length - 6) + ' more</div>' : '')
                                     : `<div class="member-tag clan-member">${fireteamMembers}</div>`
                                 }
                             </div>
@@ -659,7 +938,6 @@
         async function collectRecentActivities() {
             const allRecentActivities = [];
             const activityPromises = [];
-            const cutoffDate = new Date(Date.now() - (CONFIG.HOURS_LOOKBACK * 60 * 60 * 1000));
 
             for (const member of clanMembers) {
                 const membershipType = member.destinyUserInfo.membershipType;
@@ -667,7 +945,8 @@
                 
                 try {
                     const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`;
-                    const profile = await makeAPIRequest(profileEndpoint);
+                    const useAuth = isLoggedIn && optedInMembers.has(membershipId);
+                    const profile = await makeAPIRequest(profileEndpoint, useAuth);
                     
                     if (profile && profile.characters && profile.characters.data) {
                         const characters = Object.keys(profile.characters.data);
@@ -684,7 +963,8 @@
                                                     displayName: member.destinyUserInfo.displayName,
                                                     membershipType: membershipType,
                                                     membershipId: membershipId,
-                                                    characterId: characterId
+                                                    characterId: characterId,
+                                                    isOptedIn: optedInMembers.has(membershipId)
                                                 }
                                             }))
                                     )
@@ -721,11 +1001,18 @@
                 .sort((a, b) => new Date(b.period) - new Date(a.period));
             
             console.log(`Collected ${sortedActivities.length} activities from ${clanMembers.length} clan members`);
+            if (isLoggedIn) {
+                console.log(`Enhanced data available for ${optedInMembers.size} opted-in members`);
+            }
+            
             return sortedActivities;
         }
 
         async function init() {
             try {
+                // Check user session first
+                await checkUserSession();
+
                 console.log('Getting clan information...');
                 clanData = await getClanByName();
                 
@@ -758,6 +1045,13 @@
 
                 // Set up load more button
                 document.getElementById('loadMoreBtn').addEventListener('click', loadMoreActivities);
+
+                // Check for login success message
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('login') === 'success') {
+                    // Remove the parameter from URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
 
             } catch (error) {
                 console.error('Initialization failed:', error);
