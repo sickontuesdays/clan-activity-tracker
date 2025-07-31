@@ -41,17 +41,36 @@ module.exports = async (req, res) => {
 
         console.log('Bungie API response status:', response.status);
 
+        // Get response data
         const data = await response.json();
-        console.log('Bungie API response:', JSON.stringify(data, null, 2));
+        
+        // Log detailed response info for debugging
+        if (data.ErrorCode !== 1) {
+            console.log('Bungie API error response:', {
+                ErrorCode: data.ErrorCode,
+                ErrorStatus: data.ErrorStatus,
+                Message: data.Message,
+                endpoint: endpoint
+            });
+        } else {
+            console.log('Bungie API success:', {
+                endpoint: endpoint,
+                hasResponse: !!data.Response,
+                responseType: typeof data.Response
+            });
+        }
 
-        // Don't throw error for non-200 status codes, just return the data
-        // Let the client handle Bungie API errors
+        // Always return the Bungie response - let client handle errors
+        // This allows the client to properly handle different types of responses
         res.status(200).json(data);
         
     } catch (error) {
         console.error('API request failed:', error);
-        console.error('Error details:', error.message);
-        console.error('Stack trace:', error.stack);
+        console.error('Error details:', {
+            message: error.message,
+            endpoint: endpoint,
+            stack: error.stack
+        });
         
         res.status(500).json({ 
             error: 'Failed to fetch data from Bungie API',

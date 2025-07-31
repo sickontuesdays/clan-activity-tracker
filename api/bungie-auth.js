@@ -49,15 +49,32 @@ module.exports = async (req, res) => {
         }
 
         const sessionToken = sessionCookie.split('=')[1];
-        const decoded = jwt.verify(sessionToken, JWT_SECRET);
+        let decoded;
+        
+        try {
+            decoded = jwt.verify(sessionToken, JWT_SECRET);
+        } catch (jwtError) {
+            console.error('JWT verification failed:', jwtError.message);
+            res.status(401).json({ error: 'Invalid session' });
+            return;
+        }
 
         // Check if token is expired
         if (decoded.tokenExpiry && Date.now() > decoded.tokenExpiry) {
+            console.log('Session expired for user:', decoded.displayName);
             res.status(401).json({ error: 'Session expired' });
             return;
         }
 
+        // Check if access token exists
+        if (!decoded.accessToken) {
+            console.error('No access token found in session for user:', decoded.displayName);
+            res.status(401).json({ error: 'No access token available' });
+            return;
+        }
+
         console.log('Making authenticated request to Bungie API:', `https://www.bungie.net/Platform${endpoint}`);
+        console.log('User:', decoded.displayName, 'Token expires:', new Date(decoded.tokenExpiry));
         
         // Make authenticated request to Bungie API
         const response = await fetch(`https://www.bungie.net/Platform${endpoint}`, {
@@ -68,19 +85,55 @@ module.exports = async (req, res) => {
             }
         });
 
-        console.log('Bungie API response status:', response.status);
+        console.log('Bungie API authenticated response status:', response.status);
 
+        // Get response data
         const data = await response.json();
-        console.log('Bungie API response:', JSON.stringify(data, null, 2));
+
+        // Log detailed response info for debugging
+        if (data.ErrorCode !== 1) {
+            console.log('Bungie API authenticated error response:', {
+                ErrorCode: data.ErrorCode,
+                ErrorStatus: data.ErrorStatus,
+                Message: data.Message,
+                endpoint: endpoint,
+                user: decoded.displayName
+            });
+            
+            // Check for token expiration errors
+            if (data.ErrorCode === 99 || data.ErrorStatus === 'WebAuthRequired' || 
+                data.Message?.includes('token') || data.Message?.includes('authorization')) {
+                console.log('Access token appears to be expired for user:', decoded.displayName);
+                res.status(401).json({ 
+                    error: 'Access token expired',
+                    message: 'Please log in again'
+                });
+                return;
+            }
+        } else {
+            console.log('Bungie API authenticated success:', {
+                endpoint: endpoint,
+                user: decoded.displayName,
+                hasResponse: !!data.Response,
+                responseType: typeof data.Response
+            });
+        }
 
         // Return the response data
         res.status(200).json(data);
         
     } catch (error) {
         console.error('Authenticated API request failed:', error);
+        console.error('Error details:', {
+            message: error.message,
+            endpoint: endpoint,
+            stack: error.stack
+        });
         
         if (error.name === 'JsonWebTokenError') {
             res.status(401).json({ error: 'Invalid session' });
+        } else if (error.name === 'TokenExpiredError') {
+            res.status(401).json({ error: 'Session expired' });
         } else {
             res.status(500).json({ 
                 error: 'Failed to fetch data from Bungie API',

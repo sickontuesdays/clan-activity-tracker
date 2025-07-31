@@ -520,6 +520,7 @@
         let displayedActivities = [];
         let currentPage = 0;
         let isLoggedIn = false;
+        let activityDefinitionCache = new Map();
 
         // Utility functions
         function showError(message) {
@@ -575,6 +576,9 @@
                 if (response.ok) {
                     userSession = await response.json();
                     isLoggedIn = true;
+                    
+                    // Auto-opt in current user
+                    await fetch('/api/opted-in-members', { method: 'POST' });
                     
                     // Get opted-in members list
                     const optedInResponse = await fetch('/api/opted-in-members');
@@ -740,18 +744,20 @@
         }
 
         async function getActivityDefinition(activityHash) {
+            if (activityDefinitionCache.has(activityHash)) {
+                return activityDefinitionCache.get(activityHash);
+            }
+
             try {
                 const endpoint = `/Destiny2/Manifest/DestinyActivityDefinition/${activityHash}/`;
                 const response = await makeAPIRequest(endpoint);
+                activityDefinitionCache.set(activityHash, response);
                 return response;
             } catch (error) {
                 console.error(`Failed to get activity definition for ${activityHash}:`, error);
                 return null;
             }
         }
-
-        // Cache for activity definitions to avoid repeated API calls
-        const activityDefinitionCache = new Map();
 
         function updateStatsBar() {
             const totalActivities = allActivities.length;
@@ -943,6 +949,18 @@
                             <div class="stat-item">
                                 <span class="stat-value-small">${statsSource.score.basic.value.toLocaleString()}</span>
                                 <span class="stat-label-small">Score</span>
+                            </div>
+                            ` : ''}
+                            ${statsSource.weaponKillsAbility && statsSource.weaponKillsAbility.basic.value > 0 ? `
+                            <div class="stat-item">
+                                <span class="stat-value-small">${statsSource.weaponKillsAbility.basic.value}</span>
+                                <span class="stat-label-small">Ability</span>
+                            </div>
+                            ` : ''}
+                            ${statsSource.weaponKillsSuper && statsSource.weaponKillsSuper.basic.value > 0 ? `
+                            <div class="stat-item">
+                                <span class="stat-value-small">${statsSource.weaponKillsSuper.basic.value}</span>
+                                <span class="stat-label-small">Super</span>
                             </div>
                             ` : ''}
                         </div>

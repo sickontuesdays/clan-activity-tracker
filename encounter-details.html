@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encounter Details - S!ck on Tuesdays!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #ffffff;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        .header h1 {
+            color: #f7931e;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(247, 147, 30, 0.2);
+            border: 1px solid #f7931e;
+            border-radius: 5px;
+            color: #f7931e;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: rgba(247, 147, 30, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 1.2em;
+            color: #f7931e;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ff6666;
+        }
+
+        .encounter-overview {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .encounter-title {
+            font-size: 2em;
+            color: #f7931e;
+            margin-bottom: 10px;
+        }
+
+        .encounter-subtitle {
+            color: #aaa;
+            font-size: 1.1em;
+            margin-bottom: 20px;
+        }
+
+        .encounter-selector {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .selector-title {
+            font-size: 1.3em;
+            color: #f7931e;
+            margin-bottom: 15px;
+        }
+
+        .encounter-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .encounter-tab {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #666;
+            color: #ccc;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+
+        .encounter-tab:hover {
+            border-color: #f7931e;
+            color: #fff;
+        }
+
+        .encounter-tab.active {
+            background: rgba(247, 147, 30, 0.2);
+            border-color: #f7931e;
+            color: #f7931e;
+            font-weight: bold;
+        }
+
+        .encounter-stats {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stats-title {
+            font-size: 1.5em;
+            color: #f7931e;
+            margin-bottom: 15px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            color: #f7931e;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .player-performance {
+            display: grid;
+            gap: 20px;
+        }
+
+        .player-card {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .player-card:hover {
+            border-color: #f7931e;
+            transform: translateY(-2px);
+        }
+
+        .player-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .player-name {
+            font-size: 1.4em;
+            color: #f7931e;
+            font-weight: bold;
+        }
+
+        .player-class {
+            background: rgba(247, 147, 30, 0.2);
+            border: 1px solid #f7931e;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            color: #f7931e;
+        }
+
+        .encounter-specific-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .encounter-stat-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
+            border: 1px solid #333;
+        }
+
+        .encounter-stat-value {
+            display: block;
+            font-size: 1.3em;
+            font-weight: bold;
+            color: #f7931e;
+            margin-bottom: 2px;
+        }
+
+        .encounter-stat-label {
+            display: block;
+            font-size: 0.8em;
+            color: #aaa;
+        }
+
+        .phase-breakdown {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+        }
+
+        .phase-title {
+            color: #f7931e;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .phase-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+        }
+
+        .phase-item {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            font-size: 0.9em;
+        }
+
+        .phase-name {
+            color: #fff;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .phase-details {
+            color: #f7931e;
+            font-size: 0.8em;
+        }
+
+        .no-encounter-data {
+            text-align: center;
+            padding: 40px;
+            color: #888;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid #444;
+        }
+
+        @media (max-width: 768px) {
+            .encounter-tabs {
+                flex-direction: column;
+            }
+            
+            .encounter-tab {
+                text-align: center;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .encounter-specific-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="javascript:history.back()" class="back-button">← Back to Activity</a>
+        
+        <div class="header">
+            <h1>Encounter Details</h1>
+        </div>
+
+        <div id="loading" class="loading">
+            Loading encounter data...
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="content" style="display: none;">
+            <div class="encounter-overview">
+                <div class="encounter-title" id="activityName">Loading...</div>
+                <div class="encounter-subtitle" id="encounterInfo">Select an encounter to view detailed statistics</div>
+            </div>
+
+            <div class="encounter-selector">
+                <div class="selector-title">Available Encounters</div>
+                <div class="encounter-tabs" id="encounterTabs">
+                    <!-- Encounter tabs will be populated here -->
+                </div>
+            </div>
+
+            <div id="encounterContent" style="display: none;">
+                <div class="encounter-stats">
+                    <div class="stats-title" id="currentEncounterTitle">Encounter Overview</div>
+                    <div class="stats-grid" id="encounterOverviewStats">
+                        <!-- Encounter overview stats will be populated here -->
+                    </div>
+                </div>
+
+                <div class="player-performance" id="playerPerformance">
+                    <!-- Player performance cards will be populated here -->
+                </div>
+            </div>
+
+            <div id="noEncounterData" class="no-encounter-data" style="display: none;">
+                <h3>No Encounter Data Available</h3>
+                <p>This activity doesn't appear to have individual encounter breakdowns, or the encounter data is not available through the API.</p>
+                <p>Encounter tracking is typically available for raids and some dungeons.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let activityInstanceId = null;
+        let pgcrData = null;
+        let activityDefinition = null;
+        let encounterData = [];
+        let currentEncounter = null;
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        function hideLoading() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('content').style.display = 'block';
+        }
+
+        async function makeAPIRequest(endpoint) {
+            try {
+                console.log('Making API request to:', `/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
+                const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.ErrorCode !== 1) {
+                    throw new Error(`API Error: ${data.Message}`);
+                }
+
+                return data.Response;
+            } catch (error) {
+                console.error('API Request failed:', error);
+                throw error;
+            }
+        }
+
+        async function getPGCR(instanceId) {
+            try {
+                const endpoint = `/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`;
+                const response = await makeAPIRequest(endpoint);
+                return response;
+            } catch (error) {
+                throw new Error(`Failed to get PGCR: ${error.message}`);
+            }
+        }
+
+        async function getActivityDefinition(activityHash) {
+            try {
+                const endpoint = `/Destiny2/Manifest/DestinyActivityDefinition/${activityHash}/`;
+                const response = await makeAPIRequest(endpoint);
+                return response;
+            } catch (error) {
+                console.warn('Could not load activity definition:', error);
+                return null;
+            }
+        }
+
+        function getClassName(classHash) {
+            const classes = {
+                2271682572: 'Warlock',
+                3655393761: 'Titan',
+                671679327: 'Hunter'
+            };
+            return classes[classHash] || 'Unknown';
+        }
+
+        function extractEncounterData(pgcrData) {
+            const encounters = [];
+            
+            // Check if this activity has encounter data
+            if (!pgcrData.activities || pgcrData.activities.length === 0) {
+                console.log('No activities array found in PGCR data');
+                return encounters;
+            }
+
+            // Some activities have multiple phases/encounters
+            pgcrData.activities.forEach((activity, index) => {
+                if (activity.values && Object.keys(activity.values).length > 0) {
+                    encounters.push({
+                        id: index,
+                        name: `Encounter ${index + 1}`,
+                        activityHash: activity.activityDetails?.directorActivityHash,
+                        referenceId: activity.activityDetails?.referenceId,
+                        data: activity,
+                        players: activity.entries || []
+                    });
+                }
+            });
+
+            // If no encounters found in activities array, try to extract from main PGCR
+            if (encounters.length === 0 && pgcrData.entries) {
+                // Check for encounter-specific data in player entries
+                const hasEncounterData = pgcrData.entries.some(entry => {
+                    if (entry.extended && entry.extended.activities) {
+                        return entry.extended.activities.length > 0;
+                    }
+                    return false;
+                });
+
+                if (hasEncounterData) {
+                    // Extract encounter data from extended player data
+                    const encounterMap = new Map();
+                    
+                    pgcrData.entries.forEach(entry => {
+                        if (entry.extended && entry.extended.activities) {
+                            entry.extended.activities.forEach((activity, actIndex) => {
+                                if (!encounterMap.has(actIndex)) {
+                                    encounterMap.set(actIndex, {
+                                        id: actIndex,
+                                        name: `Phase ${actIndex + 1}`,
+                                        players: [],
+                                        stats: {}
+                                    });
+                                }
+                                
+                                const encounter = encounterMap.get(actIndex);
+                                encounter.players.push({
+                                    player: entry.player,
+                                    characterClass: entry.characterClass,
+                                    values: activity.values || {},
+                                    standing: entry.standing
+                                });
+                            });
+                        }
+                    });
+
+                    encounters.push(...Array.from(encounterMap.values()));
+                }
+            }
+
+            console.log(`Found ${encounters.length} encounters in activity data`);
+            return encounters;
+        }
+
+        function renderEncounterTabs() {
+            const tabsContainer = document.getElementById('encounterTabs');
+            
+            if (encounterData.length === 0) {
+                document.getElementById('noEncounterData').style.display = 'block';
+                return;
+            }
+
+            const tabsHTML = encounterData.map((encounter, index) => `
+                <div class="encounter-tab ${index === 0 ? 'active' : ''}" 
+                     onclick="selectEncounter(${encounter.id})" 
+                     data-encounter-id="${encounter.id}">
+                    ${encounter.name}
+                </div>
+            `).join('');
+
+            tabsContainer.innerHTML = tabsHTML;
+
+            // Select first encounter by default
+            if (encounterData.length > 0) {
+                selectEncounter(encounterData[0].id);
+            }
+        }
+
+        function selectEncounter(encounterId) {
+            // Update active tab
+            document.querySelectorAll('.encounter-tab').forEach(tab => {
+                tab.classList.remove('active');
+                if (tab.dataset.encounterId == encounterId) {
+                    tab.classList.add('active');
+                }
+            });
+
+            // Find and display encounter data
+            currentEncounter = encounterData.find(e => e.id === encounterId);
+            if (currentEncounter) {
+                renderEncounterDetails(currentEncounter);
+                document.getElementById('encounterContent').style.display = 'block';
+            }
+        }
+
+        function renderEncounterDetails(encounter) {
+            document.getElementById('currentEncounterTitle').textContent = encounter.name;
+
+            // Calculate encounter overview stats
+            const players = encounter.players || [];
+            let totalKills = 0, totalDeaths = 0, totalDamage = 0, totalTime = 0;
+
+            players.forEach(player => {
+                if (player.values) {
+                    totalKills += player.values.kills?.basic?.value || 0;
+                    totalDeaths += player.values.deaths?.basic?.value || 0;
+                    totalDamage += player.values.totalDamageDealt?.basic?.value || 0;
+                    totalTime += player.values.activityDurationSeconds?.basic?.value || 0;
+                }
+            });
+
+            const avgTime = players.length > 0 ? Math.floor(totalTime / players.length) : 0;
+            const teamKD = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills.toFixed(2);
+
+            // Render overview stats
+            const overviewHTML = `
+                <div class="stat-card">
+                    <span class="stat-value">${players.length}</span>
+                    <span class="stat-label">Players</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">${totalKills.toLocaleString()}</span>
+                    <span class="stat-label">Total Kills</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">${totalDeaths}</span>
+                    <span class="stat-label">Total Deaths</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">${teamKD}</span>
+                    <span class="stat-label">Team K/D</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">${totalDamage.toLocaleString()}</span>
+                    <span class="stat-label">Total Damage</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">${Math.floor(avgTime / 60)}m ${avgTime % 60}s</span>
+                    <span class="stat-label">Avg Duration</span>
+                </div>
+            `;
+
+            document.getElementById('encounterOverviewStats').innerHTML = overviewHTML;
+
+            // Render player performance
+            const playerHTML = players.map(player => {
+                const stats = player.values || {};
+                const playerName = player.player?.destinyUserInfo?.displayName || 'Unknown Player';
+                const playerClass = getClassName(player.characterClass);
+
+                const encounterStats = [
+                    { key: 'kills', label: 'Kills' },
+                    { key: 'deaths', label: 'Deaths' },
+                    { key: 'assists', label: 'Assists' },
+                    { key: 'totalDamageDealt', label: 'Damage' },
+                    { key: 'precisionKills', label: 'Precision' },
+                    { key: 'weaponKillsAbility', label: 'Ability Kills' },
+                    { key: 'weaponKillsSuper', label: 'Super Kills' },
+                    { key: 'damageTaken', label: 'Damage Taken' }
+                ].filter(stat => stats[stat.key] && stats[stat.key].basic && stats[stat.key].basic.value > 0);
+
+                const statsHTML = encounterStats.map(stat => {
+                    const value = stats[stat.key].basic.value;
+                    const displayValue = typeof value === 'number' ? 
+                        (value > 1000 ? value.toLocaleString() : value) : value;
+                    
+                    return `
+                        <div class="encounter-stat-item">
+                            <span class="encounter-stat-value">${displayValue}</span>
+                            <span class="encounter-stat-label">${stat.label}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                return `
+                    <div class="player-card">
+                        <div class="player-header">
+                            <div class="player-name">${playerName}</div>
+                            <div class="player-class">${playerClass}</div>
+                        </div>
+                        
+                        <div class="encounter-specific-stats">
+                            ${statsHTML}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('playerPerformance').innerHTML = playerHTML;
+        }
+
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        async function init() {
+            try {
+                activityInstanceId = getUrlParameter('instanceId');
+                
+                if (!activityInstanceId) {
+                    throw new Error('No activity instance ID provided');
+                }
+
+                console.log('Loading encounter data for instance:', activityInstanceId);
+
+                pgcrData = await getPGCR(activityInstanceId);
+                
+                if (!pgcrData) {
+                    throw new Error('No PGCR data found');
+                }
+
+                // Get activity definition for name
+                if (pgcrData.activityDetails && pgcrData.activityDetails.directorActivityHash) {
+                    try {
+                        activityDefinition = await getActivityDefinition(pgcrData.activityDetails.directorActivityHash);
+                    } catch (error) {
+                        console.warn('Could not load activity definition:', error);
+                    }
+                }
+
+                // Set activity name
+                const activityName = activityDefinition ? 
+                    activityDefinition.displayProperties.name : 
+                    'Unknown Activity';
+                document.getElementById('activityName').textContent = activityName;
+
+                // Extract encounter data
+                encounterData = extractEncounterData(pgcrData);
+
+                // Render encounter tabs and content
+                renderEncounterTabs();
+
+                hideLoading();
+
+            } catch (error) {
+                console.error('Initialization failed:', error);
+                showError(`Failed to load encounter details: ${error.message}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

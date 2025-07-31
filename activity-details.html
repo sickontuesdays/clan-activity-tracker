@@ -161,6 +161,50 @@
             color: #aaa;
         }
 
+        .boss-damage-section {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .boss-damage-title {
+            font-size: 1.5em;
+            color: #f7931e;
+            margin-bottom: 15px;
+        }
+
+        .boss-damage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .boss-damage-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .boss-damage-player {
+            color: #f7931e;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .boss-damage-stats {
+            display: grid;
+            gap: 5px;
+        }
+
+        .boss-damage-stat {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+        }
+
         .player-stats {
             display: grid;
             gap: 20px;
@@ -248,13 +292,13 @@
 
         .weapon-stats {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 10px;
         }
 
         .weapon-item {
             background: rgba(0, 0, 0, 0.2);
-            padding: 10px 12px;
+            padding: 12px;
             border-radius: 4px;
             border: 1px solid #444;
             font-size: 0.9em;
@@ -265,6 +309,12 @@
             font-weight: bold;
             display: block;
             margin-bottom: 4px;
+        }
+
+        .weapon-id {
+            color: #888;
+            font-size: 0.8em;
+            margin-bottom: 6px;
         }
 
         .weapon-stats-row {
@@ -437,6 +487,13 @@
                 </div>
             </div>
 
+            <div id="bossDamageSection" class="boss-damage-section" style="display: none;">
+                <div class="boss-damage-title">Boss Damage</div>
+                <div class="boss-damage-grid" id="bossDamageStats">
+                    <!-- Boss damage stats will be populated here -->
+                </div>
+            </div>
+
             <div class="player-stats" id="playerStats">
                 <!-- Player cards will be populated here -->
             </div>
@@ -447,6 +504,7 @@
         let activityInstanceId = null;
         let pgcrData = null;
         let activityDefinition = null;
+        let weaponDefinitionCache = new Map();
 
         function showError(message) {
             document.getElementById('error').textContent = message;
@@ -506,6 +564,22 @@
                 return response;
             } catch (error) {
                 console.warn('Could not load activity definition:', error);
+                return null;
+            }
+        }
+
+        async function getWeaponDefinition(weaponHash) {
+            if (weaponDefinitionCache.has(weaponHash)) {
+                return weaponDefinitionCache.get(weaponHash);
+            }
+
+            try {
+                const endpoint = `/Destiny2/Manifest/DestinyInventoryItemDefinition/${weaponHash}/`;
+                const response = await makeAPIRequest(endpoint);
+                weaponDefinitionCache.set(weaponHash, response);
+                return response;
+            } catch (error) {
+                console.warn('Could not load weapon definition for hash:', weaponHash, error);
                 return null;
             }
         }
@@ -656,7 +730,9 @@
             });
 
             const teamStatsHTML = Object.keys(allStats)
-                .filter(key => ['kills', 'deaths', 'assists', 'score', 'totalDamageDealt', 'precisionKills', 'abilityKills', 'grenadeKills', 'meleeKills', 'superKills'].includes(key))
+                .filter(key => ['kills', 'deaths', 'assists', 'score', 'totalDamageDealt', 'precisionKills', 
+                               'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
+                               'damageTaken', 'totalDamageTaken'].includes(key))
                 .map(statKey => {
                     const stat = allStats[statKey];
                     const total = stat.total;
@@ -664,6 +740,11 @@
                     
                     let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                     if (statKey === 'totalDamageDealt') label = 'Total Damage';
+                    if (statKey === 'weaponKillsAbility') label = 'Ability Kills';
+                    if (statKey === 'weaponKillsGrenade') label = 'Grenade Kills';
+                    if (statKey === 'weaponKillsMelee') label = 'Melee Kills';
+                    if (statKey === 'weaponKillsSuper') label = 'Super Kills';
+                    if (statKey === 'damageTaken' || statKey === 'totalDamageTaken') label = 'Damage Taken';
                     
                     return `
                         <div class="team-stat">
@@ -676,26 +757,89 @@
             document.getElementById('teamStats').innerHTML = teamStatsHTML;
         }
 
-        function renderPlayerStats() {
+        function renderBossDamage() {
             if (!pgcrData || !pgcrData.entries) return;
 
-            const playerCardsHTML = pgcrData.entries.map(entry => {
+            const bossDamageData = [];
+
+            pgcrData.entries.forEach(entry => {
+                const player = entry.player;
+                const stats = entry.values || {};
+                const playerBossData = {};
+
+                // Check for various boss damage fields
+                const bossDamageFields = [
+                    'bossDamageDealt',
+                    'bossUltimatesDamageDealt',
+                    'totalBossDamage',
+                    'damageToChampions',
+                    'damageToUltimates'
+                ];
+
+                bossDamageFields.forEach(field => {
+                    if (stats[field] && stats[field].basic && stats[field].basic.value > 0) {
+                        playerBossData[field] = stats[field].basic.value;
+                    }
+                });
+
+                if (Object.keys(playerBossData).length > 0) {
+                    bossDamageData.push({
+                        playerName: player.destinyUserInfo.displayName,
+                        damage: playerBossData
+                    });
+                }
+            });
+
+            if (bossDamageData.length > 0) {
+                const bossDamageHTML = bossDamageData.map(playerData => {
+                    const damageStats = Object.entries(playerData.damage).map(([field, value]) => {
+                        let label = field.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        return `
+                            <div class="boss-damage-stat">
+                                <span>${label}:</span>
+                                <span>${value.toLocaleString()}</span>
+                            </div>
+                        `;
+                    }).join('');
+
+                    return `
+                        <div class="boss-damage-item">
+                            <div class="boss-damage-player">${playerData.playerName}</div>
+                            <div class="boss-damage-stats">${damageStats}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                document.getElementById('bossDamageStats').innerHTML = bossDamageHTML;
+                document.getElementById('bossDamageSection').style.display = 'block';
+            }
+        }
+
+        async function renderPlayerStats() {
+            if (!pgcrData || !pgcrData.entries) return;
+
+            const playerCardsHTML = await Promise.all(pgcrData.entries.map(async (entry) => {
                 const player = entry.player;
                 const stats = entry.values || {};
                 
-                // Main stats - prioritizing key combat stats
+                // Main stats - updated with correct field names
                 const mainStats = ['kills', 'deaths', 'assists', 'score', 'totalDamageDealt', 'precisionKills', 
-                                 'abilityKills', 'grenadeKills', 'meleeKills', 'superKills', 'weaponKillsAutoRifle',
-                                 'weaponKillsHandCannon', 'weaponKillsPulseRifle', 'weaponKillsScoutRifle',
-                                 'weaponKillsShotgun', 'weaponKillsSniper', 'weaponKillsFusionRifle',
-                                 'weaponKillsSubmachinegun', 'weaponKillsRocketLauncher', 'weaponKillsGrenadeLauncher'];
+                                 'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
+                                 'damageTaken', 'totalDamageTaken'];
 
                 const mainStatsHTML = mainStats
-                    .filter(statKey => stats[statKey])
+                    .filter(statKey => stats[statKey] && stats[statKey].basic && stats[statKey].basic.value > 0)
                     .map(statKey => {
                         const value = stats[statKey].basic.value;
                         let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                        label = label.replace('Weapon Kills ', '').replace('Total Damage Dealt', 'Damage');
+                        
+                        // Better label formatting
+                        if (statKey === 'totalDamageDealt') label = 'Damage Dealt';
+                        if (statKey === 'weaponKillsAbility') label = 'Ability Kills';
+                        if (statKey === 'weaponKillsGrenade') label = 'Grenade Kills';
+                        if (statKey === 'weaponKillsMelee') label = 'Melee Kills';
+                        if (statKey === 'weaponKillsSuper') label = 'Super Kills';
+                        if (statKey === 'damageTaken' || statKey === 'totalDamageTaken') label = 'Damage Taken';
                         
                         return `
                             <div class="stat-item">
@@ -721,17 +865,22 @@
                         `;
                     }).join('');
 
-                // Weapons section
+                // Enhanced weapons section with names
                 let weaponsHTML = '';
                 if (entry.extended && entry.extended.weapons) {
-                    const weaponStats = entry.extended.weapons.map(weapon => {
+                    const weaponStats = await Promise.all(entry.extended.weapons.map(async (weapon) => {
                         const kills = weapon.values.uniqueWeaponKills ? weapon.values.uniqueWeaponKills.basic.value : 0;
                         const precisionKills = weapon.values.uniqueWeaponPrecisionKills ? weapon.values.uniqueWeaponPrecisionKills.basic.value : 0;
                         const damage = weapon.values.uniqueWeaponDamageDealt ? weapon.values.uniqueWeaponDamageDealt.basic.value : 0;
                         
+                        // Get weapon name
+                        const weaponDef = await getWeaponDefinition(weapon.referenceId);
+                        const weaponName = weaponDef ? weaponDef.displayProperties.name : `Unknown Weapon`;
+                        
                         return `
                             <div class="weapon-item">
-                                <span class="weapon-name">Weapon ID: ${weapon.referenceId}</span>
+                                <span class="weapon-name">${weaponName}</span>
+                                <div class="weapon-id">ID: ${weapon.referenceId}</div>
                                 <div class="weapon-stats-row">
                                     <span>${kills} kills</span>
                                     <span>${precisionKills} precision</span>
@@ -739,12 +888,12 @@
                                 </div>
                             </div>
                         `;
-                    }).join('');
+                    }));
                     
                     weaponsHTML = `
                         <div class="weapons-section">
                             <div class="weapons-title">Weapons Used (${entry.extended.weapons.length})</div>
-                            <div class="weapon-stats">${weaponStats}</div>
+                            <div class="weapon-stats">${weaponStats.join('')}</div>
                         </div>
                     `;
                 }
@@ -788,9 +937,9 @@
                         ${medalsHTML}
                     </div>
                 `;
-            }).join('');
+            }));
 
-            document.getElementById('playerStats').innerHTML = playerCardsHTML;
+            document.getElementById('playerStats').innerHTML = playerCardsHTML.join('');
         }
 
         function getUrlParameter(name) {
@@ -825,7 +974,8 @@
                 renderActivityOverview();
                 renderActivityMetadata();
                 renderTeamStats();
-                renderPlayerStats();
+                renderBossDamage();
+                await renderPlayerStats();
 
                 hideLoading();
 
