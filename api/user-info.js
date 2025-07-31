@@ -33,7 +33,7 @@ module.exports = async (req, res) => {
         console.log('Getting user info from Bungie API...');
         
         // Get current user's membership data
-        const membershipResponse = await fetch('https://www.bungie.net/Platform/User/GetMembershipDataForCurrentUser/', {
+        const membershipResponse = await fetch('https://www.bungie.net/Platform/User/GetMembershipsForCurrentUser/', {
             headers: {
                 'X-API-Key': API_KEY,
                 'Authorization': `Bearer ${accessToken}`
@@ -41,7 +41,9 @@ module.exports = async (req, res) => {
         });
 
         if (!membershipResponse.ok) {
-            throw new Error(`Failed to get membership data: ${membershipResponse.status}`);
+            const errorText = await membershipResponse.text();
+            console.error('Membership response error:', membershipResponse.status, errorText);
+            throw new Error(`Failed to get membership data: ${membershipResponse.status} - ${errorText}`);
         }
 
         const membershipData = await membershipResponse.json();
