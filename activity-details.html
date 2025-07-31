@@ -656,7 +656,7 @@
             });
 
             const teamStatsHTML = Object.keys(allStats)
-                .filter(key => ['kills', 'deaths', 'assists', 'score', 'totalDamageDealt', 'precisionKills', 'grenadeKills', 'meleeKills', 'superKills'].includes(key))
+                .filter(key => ['kills', 'deaths', 'assists', 'score', 'totalDamageDealt', 'precisionKills', 'abilityKills', 'grenadeKills', 'meleeKills', 'superKills'].includes(key))
                 .map(statKey => {
                     const stat = allStats[statKey];
                     const total = stat.total;
@@ -683,9 +683,9 @@
                 const player = entry.player;
                 const stats = entry.values || {};
                 
-                // Main stats
+                // Main stats - prioritizing key combat stats
                 const mainStats = ['kills', 'deaths', 'assists', 'score', 'totalDamageDealt', 'precisionKills', 
-                                 'grenadeKills', 'meleeKills', 'superKills', 'abilityKills', 'weaponKillsAutoRifle',
+                                 'abilityKills', 'grenadeKills', 'meleeKills', 'superKills', 'weaponKillsAutoRifle',
                                  'weaponKillsHandCannon', 'weaponKillsPulseRifle', 'weaponKillsScoutRifle',
                                  'weaponKillsShotgun', 'weaponKillsSniper', 'weaponKillsFusionRifle',
                                  'weaponKillsSubmachinegun', 'weaponKillsRocketLauncher', 'weaponKillsGrenadeLauncher'];
