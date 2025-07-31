@@ -739,6 +739,20 @@
             }
         }
 
+        async function getActivityDefinition(activityHash) {
+            try {
+                const endpoint = `/Destiny2/Manifest/DestinyActivityDefinition/${activityHash}/`;
+                const response = await makeAPIRequest(endpoint);
+                return response;
+            } catch (error) {
+                console.error(`Failed to get activity definition for ${activityHash}:`, error);
+                return null;
+            }
+        }
+
+        // Cache for activity definitions to avoid repeated API calls
+        const activityDefinitionCache = new Map();
+
         function updateStatsBar() {
             const totalActivities = allActivities.length;
             const activePlayers = new Set(allActivities.map(a => a.memberInfo.membershipId)).size;
@@ -802,10 +816,34 @@
                 return;
             }
 
+            // First, get all unique activity hashes and fetch their definitions
+            const activityHashes = [...new Set(activities.map(a => a.activityDetails.directorActivityHash).filter(h => h))];
+            
+            // Fetch activity definitions in parallel
+            const definitionPromises = activityHashes.map(async (hash) => {
+                if (activityDefinitionCache.has(hash)) {
+                    return { hash, definition: activityDefinitionCache.get(hash) };
+                }
+                
+                const definition = await getActivityDefinition(hash);
+                if (definition) {
+                    activityDefinitionCache.set(hash, definition);
+                }
+                return { hash, definition };
+            });
+
+            await Promise.allSettled(definitionPromises);
+
             const activityDetailsPromises = activities.map(async (activity) => {
                 const hasPrivateAccess = isLoggedIn && optedInMembers.has(activity.memberInfo.membershipId);
                 const pgcr = await getActivityDetails(activity.activityDetails.instanceId, hasPrivateAccess);
-                return { activity, pgcr, hasPrivateAccess };
+                
+                // Get activity name from definition cache
+                const activityHash = activity.activityDetails.directorActivityHash;
+                const definition = activityHash ? activityDefinitionCache.get(activityHash) : null;
+                const activityName = definition?.displayProperties?.name || getActivityModeString(activity.activityDetails.mode);
+                
+                return { activity, pgcr, hasPrivateAccess, activityName };
             });
 
             const activityDetails = await Promise.allSettled(activityDetailsPromises);
@@ -813,13 +851,34 @@
             const activityHTML = activityDetails.map((result, index) => {
                 if (result.status === 'rejected') return '';
                 
-                const { activity, pgcr, hasPrivateAccess } = result.value;
-                const isComplete = activity.values && activity.values.completionReason && activity.values.completionReason.basic.value === 0;
-                const isLimitedData = !hasPrivateAccess && !activity.values;
+                const { activity, pgcr, hasPrivateAccess, activityName } = result.value;
+                
+                // Use PGCR data if available, otherwise fall back to activity data
+                let statsSource = null;
+                let isComplete = false;
+                
+                if (pgcr && pgcr.entries) {
+                    // Find the clan member's entry in the PGCR
+                    const memberEntry = pgcr.entries.find(entry => 
+                        entry.player.destinyUserInfo.membershipId === activity.memberInfo.membershipId
+                    );
+                    
+                    if (memberEntry && memberEntry.values) {
+                        statsSource = memberEntry.values;
+                        isComplete = memberEntry.values.completionReason && memberEntry.values.completionReason.basic.value === 0;
+                    }
+                }
+                
+                // Fall back to activity data if PGCR data isn't available
+                if (!statsSource && activity.values) {
+                    statsSource = activity.values;
+                    isComplete = activity.values.completionReason && activity.values.completionReason.basic.value === 0;
+                }
+                
+                const isLimitedData = !hasPrivateAccess && !statsSource;
                 
                 let fireteamMembers = [activity.memberInfo.displayName];
                 let clanMembersInFireteam = clanMemberIds.has(activity.memberInfo.membershipId) ? 1 : 0;
-                let optedInMembersInFireteam = 0;
                 
                 if (pgcr && pgcr.entries) {
                     fireteamMembers = pgcr.entries.map(entry => ({
@@ -828,7 +887,6 @@
                         isOptedIn: optedInMembers.has(entry.player.destinyUserInfo.membershipId)
                     }));
                     clanMembersInFireteam = fireteamMembers.filter(m => m.isClanMember).length;
-                    optedInMembersInFireteam = fireteamMembers.filter(m => m.isOptedIn).length;
                 }
                 
                 return `
@@ -836,7 +894,7 @@
                         <div class="activity-header">
                             <div class="activity-info">
                                 <div class="activity-name">
-                                    ${activity.activityDetails.directorActivityHash ? 'Loading...' : 'Unknown Activity'}
+                                    ${activityName}
                                 </div>
                                 <div class="activity-mode">
                                     ${getActivityModeString(activity.activityDetails.mode)}
@@ -853,7 +911,7 @@
                         <div class="activity-details">
                             <div class="detail-item">
                                 <span class="detail-label">Duration:</span>
-                                <span class="detail-value">${activity.values?.activityDurationSeconds ? Math.floor(activity.values.activityDurationSeconds.basic.value / 60) + 'm' : 'N/A'}</span>
+                                <span class="detail-value">${statsSource?.activityDurationSeconds ? Math.floor(statsSource.activityDurationSeconds.basic.value / 60) + 'm' : 'N/A'}</span>
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Clan Members:</span>
@@ -861,29 +919,29 @@
                             </div>
                         </div>
                         
-                        ${activity.values && !isLimitedData ? `
+                        ${statsSource && !isLimitedData ? `
                         <div class="stats-preview">
-                            ${activity.values.kills ? `
+                            ${statsSource.kills ? `
                             <div class="stat-item">
-                                <span class="stat-value-small">${activity.values.kills.basic.value}</span>
+                                <span class="stat-value-small">${statsSource.kills.basic.value}</span>
                                 <span class="stat-label-small">Kills</span>
                             </div>
                             ` : ''}
-                            ${activity.values.deaths ? `
+                            ${statsSource.deaths ? `
                             <div class="stat-item">
-                                <span class="stat-value-small">${activity.values.deaths.basic.value}</span>
+                                <span class="stat-value-small">${statsSource.deaths.basic.value}</span>
                                 <span class="stat-label-small">Deaths</span>
                             </div>
                             ` : ''}
-                            ${activity.values.assists ? `
+                            ${statsSource.assists ? `
                             <div class="stat-item">
-                                <span class="stat-value-small">${activity.values.assists.basic.value}</span>
+                                <span class="stat-value-small">${statsSource.assists.basic.value}</span>
                                 <span class="stat-label-small">Assists</span>
                             </div>
                             ` : ''}
-                            ${activity.values.score ? `
+                            ${statsSource.score ? `
                             <div class="stat-item">
-                                <span class="stat-value-small">${activity.values.score.basic.value.toLocaleString()}</span>
+                                <span class="stat-value-small">${statsSource.score.basic.value.toLocaleString()}</span>
                                 <span class="stat-label-small">Score</span>
                             </div>
                             ` : ''}

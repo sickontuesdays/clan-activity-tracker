@@ -505,7 +505,7 @@
                 const response = await makeAPIRequest(endpoint);
                 return response;
             } catch (error) {
-                console.error(`Failed to get activity definition:`, error);
+                console.warn('Could not load activity definition:', error);
                 return null;
             }
         }
@@ -553,8 +553,12 @@
 
             const activity = pgcrData.activityDetails;
             
-            document.getElementById('activityName').textContent = activityDefinition ? 
-                activityDefinition.displayProperties.name : 'Unknown Activity';
+            // Get activity name from definition or fall back to mode string
+            const activityName = activityDefinition ? 
+                activityDefinition.displayProperties.name : 
+                getActivityModeString(activity.mode);
+            
+            document.getElementById('activityName').textContent = activityName;
             document.getElementById('activityMode').textContent = getActivityModeString(activity.mode);
             document.getElementById('activityDate').textContent = formatDate(pgcrData.period);
             document.getElementById('instanceId').textContent = activity.instanceId;
