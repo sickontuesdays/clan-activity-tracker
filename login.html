@@ -239,11 +239,11 @@
                 loading.textContent = 'Redirecting to Bungie.net...';
 
                 // Build OAuth URL with config from environment variables
+                // Note: scope is not included as it's configured in the Bungie app settings
                 const params = new URLSearchParams({
                     client_id: oauthConfig.clientId,
                     response_type: 'code',
                     redirect_uri: oauthConfig.redirectUri,
-                    scope: oauthConfig.scope,
                     state: generateState()
                 });
 

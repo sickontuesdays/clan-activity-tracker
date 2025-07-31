@@ -24,11 +24,11 @@ module.exports = async (req, res) => {
 
     try {
         // Return only the client ID - client secrets stay private
+        // Note: scope is not included as it's configured in the Bungie app settings
         res.status(200).json({
             clientId: CLIENT_ID,
             redirectUri: `${req.headers.origin || 'https://' + req.headers.host}/oauth-callback.html`,
-            authUrl: 'https://www.bungie.net/en/OAuth/Authorize',
-            scope: 'ReadUserData,ReadDestinyInventoryAndVault'
+            authUrl: 'https://www.bungie.net/en/OAuth/Authorize'
         });
         
     } catch (error) {
