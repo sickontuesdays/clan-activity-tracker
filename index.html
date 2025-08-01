@@ -768,9 +768,18 @@
             let hasLimitedData = false;
             
             allActivities.forEach(activity => {
+                let activityStats = null;
+                
+                // Look for stats in both locations
                 if (activity.values) {
-                    totalKills += activity.values.kills ? activity.values.kills.basic.value : 0;
-                    totalDeaths += activity.values.deaths ? activity.values.deaths.basic.value : 0;
+                    activityStats = activity.values;
+                } else if (activity.extended && activity.extended.values) {
+                    activityStats = activity.extended.values;
+                }
+                
+                if (activityStats) {
+                    totalKills += activityStats.kills ? activityStats.kills.basic.value : 0;
+                    totalDeaths += activityStats.deaths ? activityStats.deaths.basic.value : 0;
                 } else {
                     hasLimitedData = true;
                 }
@@ -869,9 +878,17 @@
                         entry.player.destinyUserInfo.membershipId === activity.memberInfo.membershipId
                     );
                     
-                    if (memberEntry && memberEntry.values) {
-                        statsSource = memberEntry.values;
-                        isComplete = memberEntry.values.completionReason && memberEntry.values.completionReason.basic.value === 0;
+                    if (memberEntry && (memberEntry.values || (memberEntry.extended && memberEntry.extended.values))) {
+                        // Combine stats from both locations
+                        const combinedStats = { ...memberEntry.values };
+                        if (memberEntry.extended && memberEntry.extended.values) {
+                            Object.keys(memberEntry.extended.values).forEach(key => {
+                                combinedStats[key] = memberEntry.extended.values[key];
+                            });
+                        }
+                        
+                        statsSource = combinedStats;
+                        isComplete = combinedStats.completionReason && combinedStats.completionReason.basic.value === 0;
                     }
                 }
                 
