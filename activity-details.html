@@ -725,13 +725,6 @@
                         });
                     }
                     
-                    // ADD HARD-CODED TEST VALUES FOR ABILITY KILLS
-                    combinedStats.weaponKillsAbility = { basic: { value: 12 } };
-                    combinedStats.weaponKillsGrenade = { basic: { value: 6 } };
-                    combinedStats.weaponKillsMelee = { basic: { value: 18 } };
-                    combinedStats.weaponKillsSuper = { basic: { value: 9 } };
-                    combinedStats.damageTaken = { basic: { value: 35000 + Math.floor(Math.random() * 20000) } };
-                    
                     Object.keys(combinedStats).forEach(statKey => {
                         const stat = combinedStats[statKey];
                         if (stat && stat.basic && typeof stat.basic.value === 'number') {
@@ -788,6 +781,12 @@
                 Object.keys(extendedStats).forEach(key => {
                     allStats[key] = extendedStats[key];
                 });
+                
+                // Debug: Log available stats for first player
+                if (player.destinyUserInfo.displayName === pgcrData.entries[0].player.destinyUserInfo.displayName) {
+                    console.log('Available stats for', player.destinyUserInfo.displayName, ':', Object.keys(allStats));
+                    console.log('Extended stats:', extendedStats);
+                }
                 
                 const playerBossData = {};
 
@@ -854,14 +853,7 @@
                     allStats[key] = extendedStats[key];
                 });
                 
-                // HARD-CODED TEST VALUES - Add fake ability kill data to test display
-                allStats.weaponKillsAbility = { basic: { value: 15, displayValue: "15" } };
-                allStats.weaponKillsGrenade = { basic: { value: 8, displayValue: "8" } };
-                allStats.weaponKillsMelee = { basic: { value: 25, displayValue: "25" } };
-                allStats.weaponKillsSuper = { basic: { value: 12, displayValue: "12" } };
-                allStats.damageTaken = { basic: { value: 45230, displayValue: "45,230" } };
-                
-                // Main stats - updated with correct field names and locations
+                // Main stats - prioritizing ability kills from extended.values
                 const mainStats = ['kills', 'deaths', 'assists', 'score', 'totalDamageDealt', 'precisionKills', 
                                  'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
                                  'damageTaken', 'totalDamageTaken'];
@@ -904,29 +896,50 @@
                         `;
                     }).join('');
 
-                // Enhanced weapons section with names and HARD-CODED DAMAGE
+                // Enhanced weapons section with names and smart damage detection
                 let weaponsHTML = '';
                 if (entry.extended && entry.extended.weapons) {
-                    const weaponStats = await Promise.all(entry.extended.weapons.map(async (weapon, index) => {
+                    const weaponStats = await Promise.all(entry.extended.weapons.map(async (weapon) => {
                         const kills = weapon.values.uniqueWeaponKills ? weapon.values.uniqueWeaponKills.basic.value : 0;
                         const precisionKills = weapon.values.uniqueWeaponPrecisionKills ? weapon.values.uniqueWeaponPrecisionKills.basic.value : 0;
                         
-                        // HARD-CODED TEST DAMAGE VALUES
-                        const testDamageValues = [125430, 89765, 45892, 23156, 67234];
-                        const damage = testDamageValues[index] || Math.floor(Math.random() * 100000);
+                        // Check for damage in multiple possible locations
+                        let damage = 0;
+                        const possibleDamageFields = [
+                            'uniqueWeaponDamageDealt',
+                            'uniqueWeaponDamage', 
+                            'weaponDamageDealt',
+                            'damageDealt',
+                            'totalDamage'
+                        ];
+                        
+                        for (const field of possibleDamageFields) {
+                            if (weapon.values[field] && weapon.values[field].basic && weapon.values[field].basic.value > 0) {
+                                damage = weapon.values[field].basic.value;
+                                break;
+                            }
+                        }
                         
                         // Get weapon name
                         const weaponDef = await getWeaponDefinition(weapon.referenceId);
                         const weaponName = weaponDef ? weaponDef.displayProperties.name : `Unknown Weapon`;
+                        
+                        // Build stats row - only show damage if it exists
+                        let statsRow = `
+                            <span>${kills} kills</span>
+                            <span>${precisionKills} precision</span>
+                        `;
+                        
+                        if (damage > 0) {
+                            statsRow += `<span>${damage.toLocaleString()} damage</span>`;
+                        }
                         
                         return `
                             <div class="weapon-item">
                                 <span class="weapon-name">${weaponName}</span>
                                 <div class="weapon-id">ID: ${weapon.referenceId}</div>
                                 <div class="weapon-stats-row">
-                                    <span>${kills} kills</span>
-                                    <span>${precisionKills} precision</span>
-                                    <span>${damage.toLocaleString()} damage</span>
+                                    ${statsRow}
                                 </div>
                             </div>
                         `;
