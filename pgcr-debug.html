@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PGCR Debug Tool - S!ck on Tuesdays!</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        .header h1 {
+            color: #f7931e;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+        }
+
+        .input-section {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            color: #f7931e;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #666;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .debug-btn {
+            background: linear-gradient(45deg, #f7931e, #e6840e);
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .debug-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(247, 147, 30, 0.4);
+        }
+
+        .debug-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .results-section {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 25px;
+            display: none;
+        }
+
+        .results-title {
+            color: #f7931e;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        .debug-output {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 5px;
+            padding: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap;
+            overflow-x: auto;
+            max-height: 500px;
+            overflow-y: auto;
+            color: #ccc;
+        }
+
+        .field-analysis {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(0, 100, 0, 0.1);
+            border: 1px solid #00aa00;
+            border-radius: 5px;
+        }
+
+        .field-analysis h3 {
+            color: #00ff00;
+            margin-bottom: 10px;
+        }
+
+        .field-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .field-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            border: 1px solid #333;
+        }
+
+        .error {
+            background: rgba(255, 0, 0, 0.1);
+            border: 1px solid #ff4444;
+            border-radius: 5px;
+            padding: 15px;
+            margin: 20px 0;
+            color: #ff6666;
+        }
+
+        .loading {
+            text-align: center;
+            color: #f7931e;
+            font-size: 1.1em;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>PGCR Debug Tool</h1>
+            <p>Inspect Post Game Carnage Report structure to find correct field names</p>
+        </div>
+
+        <div class="input-section">
+            <div class="input-group">
+                <label for="instanceId">Activity Instance ID:</label>
+                <input type="text" id="instanceId" placeholder="Enter activity instance ID (e.g., from URL: ?instanceId=123456789)" />
+            </div>
+            <button class="debug-btn" onclick="debugPGCR()">Debug PGCR Structure</button>
+        </div>
+
+        <div id="loading" class="loading" style="display: none;">
+            Loading PGCR data and analyzing structure...
+        </div>
+
+        <div id="error" class="error" style="display: none;"></div>
+
+        <div id="results" class="results-section">
+            <div class="results-title">PGCR Structure Analysis</div>
+            
+            <div class="field-analysis">
+                <h3>Available Player Stat Fields:</h3>
+                <div id="playerFields" class="field-list"></div>
+            </div>
+
+            <div class="field-analysis">
+                <h3>Available Weapon Fields:</h3>
+                <div id="weaponFields" class="field-list"></div>
+            </div>
+
+            <div class="field-analysis">
+                <h3>Potential Boss Damage Fields:</h3>
+                <div id="bossDamageFields" class="field-list"></div>
+            </div>
+
+            <div class="field-analysis">
+                <h3>Sample Player Entry Structure:</h3>
+                <div class="debug-output" id="samplePlayer"></div>
+            </div>
+
+            <div class="field-analysis">
+                <h3>Sample Weapon Entry Structure:</h3>
+                <div class="debug-output" id="sampleWeapon"></div>
+            </div>
+
+            <div class="field-analysis">
+                <h3>Full PGCR Structure (First 50 lines):</h3>
+                <div class="debug-output" id="fullStructure"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function makeAPIRequest(endpoint) {
+            try {
+                const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                }
+
+                const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.ErrorCode !== 1) {
+                    throw new Error(`API Error: ${data.Message}`);
+                }
+
+                return data.Response;
+            } catch (error) {
+                console.error('API Request failed:', error);
+                throw error;
+            }
+        }
+
+        async function getPGCR(instanceId) {
+            const endpoint = `/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`;
+            return await makeAPIRequest(endpoint);
+        }
+
+        function extractAllFields(obj, prefix = '', fields = new Set()) {
+            if (obj && typeof obj === 'object') {
+                for (const [key, value] of Object.entries(obj)) {
+                    const fullKey = prefix ? `${prefix}.${key}` : key;
+                    fields.add(fullKey);
+                    
+                    if (value && typeof value === 'object' && !Array.isArray(value)) {
+                        extractAllFields(value, fullKey, fields);
+                    }
+                }
+            }
+            return fields;
+        }
+
+        function findRelevantFields(allFields, keywords) {
+            return Array.from(allFields).filter(field => 
+                keywords.some(keyword => field.toLowerCase().includes(keyword.toLowerCase()))
+            );
+        }
+
+        async function debugPGCR() {
+            const instanceId = document.getElementById('instanceId').value.trim();
+            
+            if (!instanceId) {
+                showError('Please enter an activity instance ID');
+                return;
+            }
+
+            try {
+                // Show loading
+                document.getElementById('loading').style.display = 'block';
+                document.getElementById('error').style.display = 'none';
+                document.getElementById('results').style.display = 'none';
+
+                // Get PGCR data
+                const pgcrData = await getPGCR(instanceId);
+                
+                if (!pgcrData) {
+                    throw new Error('No PGCR data found');
+                }
+
+                console.log('Full PGCR Data:', pgcrData);
+
+                // Analyze structure
+                const allFields = new Set();
+                extractAllFields(pgcrData, '', allFields);
+
+                // Find player stat fields
+                const playerStatKeywords = ['kill', 'death', 'assist', 'damage', 'ability', 'grenade', 'melee', 'super', 'precision'];
+                const playerFields = findRelevantFields(allFields, playerStatKeywords);
+
+                // Find weapon fields
+                const weaponKeywords = ['weapon', 'damage', 'kill', 'precision'];
+                const weaponFields = findRelevantFields(allFields, weaponKeywords);
+
+                // Find boss damage fields
+                const bossDamageKeywords = ['boss', 'ultimate', 'champion', 'damage'];
+                const bossDamageFields = findRelevantFields(allFields, bossDamageKeywords);
+
+                // Display results
+                displayFieldAnalysis('playerFields', playerFields);
+                displayFieldAnalysis('weaponFields', weaponFields);
+                displayFieldAnalysis('bossDamageFields', bossDamageFields);
+
+                // Show sample structures
+                if (pgcrData.entries && pgcrData.entries.length > 0) {
+                    const samplePlayer = pgcrData.entries[0];
+                    document.getElementById('samplePlayer').textContent = JSON.stringify(samplePlayer, null, 2);
+
+                    // Show weapon structure if available
+                    if (samplePlayer.extended && samplePlayer.extended.weapons && samplePlayer.extended.weapons.length > 0) {
+                        const sampleWeapon = samplePlayer.extended.weapons[0];
+                        document.getElementById('sampleWeapon').textContent = JSON.stringify(sampleWeapon, null, 2);
+                    } else {
+                        document.getElementById('sampleWeapon').textContent = 'No weapon data found in extended section';
+                    }
+                }
+
+                // Show truncated full structure
+                const fullStructureLines = JSON.stringify(pgcrData, null, 2).split('\n');
+                document.getElementById('fullStructure').textContent = fullStructureLines.slice(0, 50).join('\n') + 
+                    (fullStructureLines.length > 50 ? '\n... (truncated)' : '');
+
+                // Hide loading and show results
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('results').style.display = 'block';
+
+            } catch (error) {
+                console.error('Debug failed:', error);
+                showError(`Failed to debug PGCR: ${error.message}`);
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+
+        function displayFieldAnalysis(containerId, fields) {
+            const container = document.getElementById(containerId);
+            if (fields.length > 0) {
+                container.innerHTML = fields.map(field => `<div class="field-item">${field}</div>`).join('');
+            } else {
+                container.innerHTML = '<div class="field-item">No relevant fields found</div>';
+            }
+        }
+
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+        }
+
+        // Auto-fill from URL if instanceId parameter exists
+        window.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const instanceId = urlParams.get('instanceId');
+            if (instanceId) {
+                document.getElementById('instanceId').value = instanceId;
+            }
+        });
+    </script>
+</body>
+</html>
