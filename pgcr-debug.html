@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PGCR Debug Tool - S!ck on Tuesdays!</title>
+    <title>Enhanced PGCR Debug Tool - S!ck on Tuesdays!</title>
     <style>
         * {
             margin: 0;
@@ -105,13 +105,110 @@
             margin-bottom: 15px;
         }
 
+        .tabs-container {
+            margin-bottom: 20px;
+        }
+
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+        }
+
+        .tab {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #666;
+            color: #ccc;
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+            border-bottom: none;
+        }
+
+        .tab:hover {
+            border-color: #f7931e;
+            color: #fff;
+        }
+
+        .tab.active {
+            background: rgba(247, 147, 30, 0.2);
+            border-color: #f7931e;
+            color: #f7931e;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .data-table {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #333;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .table-header {
+            background: rgba(247, 147, 30, 0.2);
+            padding: 12px;
+            font-weight: bold;
+            color: #f7931e;
+            border-bottom: 1px solid #333;
+        }
+
+        .table-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 3fr;
+            gap: 10px;
+            padding: 10px 12px;
+            border-bottom: 1px solid #333;
+            align-items: center;
+        }
+
+        .table-row:nth-child(even) {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .field-name {
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #fff;
+            word-break: break-all;
+        }
+
+        .field-value {
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+            color: #f7931e;
+            font-weight: bold;
+        }
+
+        .field-display {
+            font-size: 0.85em;
+            color: #aaa;
+        }
+
+        .field-type {
+            font-size: 0.8em;
+            color: #888;
+            font-style: italic;
+        }
+
         .debug-output {
             background: rgba(0, 0, 0, 0.6);
             border: 1px solid #333;
             border-radius: 5px;
             padding: 15px;
             font-family: 'Courier New', monospace;
-            font-size: 0.9em;
+            font-size: 0.85em;
             white-space: pre-wrap;
             overflow-x: auto;
             max-height: 500px;
@@ -119,39 +216,25 @@
             color: #ccc;
         }
 
-        .field-analysis {
-            margin-top: 20px;
+        .section-title {
+            color: #f7931e;
+            font-size: 1.2em;
+            margin: 20px 0 10px 0;
+            font-weight: bold;
+        }
+
+        .weapon-section {
+            margin-bottom: 25px;
             padding: 15px;
-            background: rgba(0, 100, 0, 0.1);
-            border: 1px solid #00aa00;
-            border-radius: 5px;
-        }
-
-        .field-analysis h3 {
-            color: #00ff00;
-            margin-bottom: 10px;
-        }
-
-        .field-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 10px;
-            max-height: 400px;
-            overflow-y: auto;
-        }
-
-        .field-item {
             background: rgba(0, 0, 0, 0.3);
-            padding: 10px 12px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            border: 1px solid #333;
-            word-break: break-all;
-            line-height: 1.4;
-            min-height: 40px;
-            display: flex;
-            align-items: center;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .weapon-header {
+            color: #f7931e;
+            font-weight: bold;
+            margin-bottom: 10px;
         }
 
         .error {
@@ -169,13 +252,24 @@
             font-size: 1.1em;
             padding: 20px;
         }
+
+        @media (max-width: 768px) {
+            .table-row {
+                grid-template-columns: 1fr;
+                gap: 5px;
+            }
+            
+            .tabs {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <div class="header">
-            <h1>PGCR Debug Tool</h1>
-            <p>Inspect Post Game Carnage Report structure to find correct field names</p>
+            <h1>Enhanced PGCR Debug Tool</h1>
+            <p>Complete analysis of Post Game Carnage Report structure with actual values</p>
         </div>
 
         <div class="input-section">
@@ -183,7 +277,7 @@
                 <label for="instanceId">Activity Instance ID:</label>
                 <input type="text" id="instanceId" placeholder="Enter activity instance ID (e.g., from URL: ?instanceId=123456789)" />
             </div>
-            <button class="debug-btn" onclick="debugPGCR()">Debug PGCR Structure</button>
+            <button class="debug-btn" onclick="debugPGCR()">Analyze PGCR Structure</button>
         </div>
 
         <div id="loading" class="loading" style="display: none;">
@@ -193,46 +287,48 @@
         <div id="error" class="error" style="display: none;"></div>
 
         <div id="results" class="results-section">
-            <div class="results-title">PGCR Structure Analysis</div>
+            <div class="results-title">Complete PGCR Analysis</div>
             
-            <div class="field-analysis">
-                <h3>Quick Analysis Summary:</h3>
-                <div id="quickSummary" class="field-list"></div>
-            </div>
-            
-            <div class="field-analysis">
-                <h3>Available Player Stat Fields:</h3>
-                <div id="playerFields" class="field-list"></div>
-            </div>
+            <div class="tabs-container">
+                <div class="tabs">
+                    <div class="tab active" onclick="switchTab('summary')">Summary</div>
+                    <div class="tab" onclick="switchTab('playerStats')">Player Stats</div>
+                    <div class="tab" onclick="switchTab('weaponStats')">Weapon Stats</div>
+                    <div class="tab" onclick="switchTab('otherData')">Other Data</div>
+                    <div class="tab" onclick="switchTab('rawPGCR')">Raw PGCR</div>
+                </div>
 
-            <div class="field-analysis">
-                <h3>Available Weapon Fields:</h3>
-                <div id="weaponFields" class="field-list"></div>
-            </div>
+                <div id="summary" class="tab-content active">
+                    <div class="section-title">Activity Summary</div>
+                    <div id="summaryContent"></div>
+                </div>
 
-            <div class="field-analysis">
-                <h3>Potential Boss Damage Fields:</h3>
-                <div id="bossDamageFields" class="field-list"></div>
-            </div>
+                <div id="playerStats" class="tab-content">
+                    <div class="section-title">Player Statistics (All Available Fields with Values)</div>
+                    <div id="playerStatsContent"></div>
+                </div>
 
-            <div class="field-analysis">
-                <h3>Sample Player Entry Structure:</h3>
-                <div class="debug-output" id="samplePlayer"></div>
-            </div>
+                <div id="weaponStats" class="tab-content">
+                    <div class="section-title">Weapon Statistics (Per Weapon with Values)</div>
+                    <div id="weaponStatsContent"></div>
+                </div>
 
-            <div class="field-analysis">
-                <h3>Sample Weapon Entry Structure:</h3>
-                <div class="debug-output" id="sampleWeapon"></div>
-            </div>
+                <div id="otherData" class="tab-content">
+                    <div class="section-title">Other Available Data</div>
+                    <div id="otherDataContent"></div>
+                </div>
 
-            <div class="field-analysis">
-                <h3>Full PGCR Structure (First 100 lines):</h3>
-                <div class="debug-output" id="fullStructure"></div>
+                <div id="rawPGCR" class="tab-content">
+                    <div class="section-title">Complete Raw PGCR Data</div>
+                    <div class="debug-output" id="rawPGCRContent"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
+        let pgcrData = null;
+
         async function makeAPIRequest(endpoint) {
             try {
                 const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
@@ -264,72 +360,181 @@
             return await makeAPIRequest(endpoint);
         }
 
-        function extractAllFields(obj, prefix = '', fields = new Set(), maxDepth = 10, currentDepth = 0) {
-            if (currentDepth >= maxDepth || !obj || typeof obj !== 'object') {
-                return fields;
-            }
+        function switchTab(tabName) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
             
-            for (const [key, value] of Object.entries(obj)) {
-                const fullKey = prefix ? `${prefix}.${key}` : key;
-                fields.add(fullKey);
-                
-                if (value && typeof value === 'object' && !Array.isArray(value)) {
-                    extractAllFields(value, fullKey, fields, maxDepth, currentDepth + 1);
-                } else if (Array.isArray(value) && value.length > 0 && typeof value[0] === 'object') {
-                    // For arrays, analyze the first item
-                    extractAllFields(value[0], `${fullKey}[0]`, fields, maxDepth, currentDepth + 1);
-                }
-            }
-            return fields;
+            // Remove active class from all tabs
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tabName).classList.add('active');
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
         }
 
-        function findRelevantFields(allFields, keywords) {
-            return Array.from(allFields).filter(field => 
-                keywords.some(keyword => field.toLowerCase().includes(keyword.toLowerCase()))
-            ).sort();
+        function createDataTable(data, title) {
+            let html = `
+                <div class="data-table">
+                    <div class="table-header">${title}</div>
+                    <div class="table-row" style="font-weight: bold; background: rgba(247, 147, 30, 0.1);">
+                        <div>Field Name</div>
+                        <div>Value</div>
+                        <div>Display</div>
+                        <div>Type/Notes</div>
+                    </div>
+            `;
+
+            data.forEach(item => {
+                html += `
+                    <div class="table-row">
+                        <div class="field-name">${item.name}</div>
+                        <div class="field-value">${item.value}</div>
+                        <div class="field-display">${item.display}</div>
+                        <div class="field-type">${item.type}</div>
+                    </div>
+                `;
+            });
+
+            html += '</div>';
+            return html;
         }
 
-        function analyzePlayerValues(playerEntry) {
-            const analysis = {
-                hasValues: false,
-                valuesLocation: null,
-                availableStats: [],
-                sampleValues: {}
-            };
-
+        function extractPlayerStats(playerEntry) {
+            const stats = [];
+            
+            // Main values section
             if (playerEntry.values) {
-                analysis.hasValues = true;
-                analysis.valuesLocation = 'entry.values';
-                analysis.availableStats = Object.keys(playerEntry.values);
-                analysis.sampleValues = playerEntry.values;
+                Object.keys(playerEntry.values).forEach(key => {
+                    const stat = playerEntry.values[key];
+                    if (stat.basic) {
+                        stats.push({
+                            name: `values.${key}`,
+                            value: stat.basic.value,
+                            display: stat.basic.displayValue,
+                            type: `Basic stat - ${typeof stat.basic.value}`
+                        });
+                    }
+                });
             }
 
-            return analysis;
+            // Extended values section (ability kills, etc.)
+            if (playerEntry.extended && playerEntry.extended.values) {
+                Object.keys(playerEntry.extended.values).forEach(key => {
+                    const stat = playerEntry.extended.values[key];
+                    if (stat.basic) {
+                        stats.push({
+                            name: `extended.values.${key}`,
+                            value: stat.basic.value,
+                            display: stat.basic.displayValue,
+                            type: `Extended stat - ${typeof stat.basic.value}`
+                        });
+                    }
+                });
+            }
+
+            // Score section
+            if (playerEntry.score && playerEntry.score.basic) {
+                stats.push({
+                    name: 'score',
+                    value: playerEntry.score.basic.value,
+                    display: playerEntry.score.basic.displayValue,
+                    type: `Score - ${typeof playerEntry.score.basic.value}`
+                });
+            }
+
+            return stats;
         }
 
-        function analyzeWeaponData(playerEntry) {
-            const analysis = {
-                hasWeapons: false,
-                weaponsLocation: null,
-                weaponCount: 0,
-                sampleWeapon: null,
-                availableWeaponStats: []
-            };
-
+        function extractWeaponStats(playerEntry) {
+            const weapons = [];
+            
             if (playerEntry.extended && playerEntry.extended.weapons) {
-                analysis.hasWeapons = true;
-                analysis.weaponsLocation = 'entry.extended.weapons';
-                analysis.weaponCount = playerEntry.extended.weapons.length;
-                
-                if (playerEntry.extended.weapons.length > 0) {
-                    analysis.sampleWeapon = playerEntry.extended.weapons[0];
-                    if (playerEntry.extended.weapons[0].values) {
-                        analysis.availableWeaponStats = Object.keys(playerEntry.extended.weapons[0].values);
+                playerEntry.extended.weapons.forEach((weapon, index) => {
+                    const weaponStats = [];
+                    
+                    // Reference ID
+                    weaponStats.push({
+                        name: 'referenceId',
+                        value: weapon.referenceId,
+                        display: weapon.referenceId.toString(),
+                        type: 'Weapon Hash'
+                    });
+
+                    // Weapon values
+                    if (weapon.values) {
+                        Object.keys(weapon.values).forEach(key => {
+                            const stat = weapon.values[key];
+                            if (stat.basic) {
+                                weaponStats.push({
+                                    name: `values.${key}`,
+                                    value: stat.basic.value,
+                                    display: stat.basic.displayValue,
+                                    type: `Weapon stat - ${typeof stat.basic.value}`
+                                });
+                            }
+                        });
                     }
-                }
+
+                    weapons.push({
+                        index: index,
+                        referenceId: weapon.referenceId,
+                        stats: weaponStats
+                    });
+                });
             }
 
-            return analysis;
+            return weapons;
+        }
+
+        function extractOtherData(pgcrData) {
+            const otherData = [];
+
+            // Top level data
+            ['period', 'startingPhaseIndex', 'activityWasStartedFromBeginning', 'activityDifficultyTier'].forEach(key => {
+                if (pgcrData[key] !== undefined) {
+                    otherData.push({
+                        name: key,
+                        value: pgcrData[key],
+                        display: pgcrData[key].toString(),
+                        type: `Top-level - ${typeof pgcrData[key]}`
+                    });
+                }
+            });
+
+            // Activity details
+            if (pgcrData.activityDetails) {
+                Object.keys(pgcrData.activityDetails).forEach(key => {
+                    const value = pgcrData.activityDetails[key];
+                    otherData.push({
+                        name: `activityDetails.${key}`,
+                        value: Array.isArray(value) ? `[${value.join(', ')}]` : value,
+                        display: Array.isArray(value) ? `Array(${value.length})` : value.toString(),
+                        type: `Activity detail - ${typeof value}`
+                    });
+                });
+            }
+
+            // Teams data
+            if (pgcrData.teams) {
+                pgcrData.teams.forEach((team, index) => {
+                    Object.keys(team).forEach(key => {
+                        otherData.push({
+                            name: `teams[${index}].${key}`,
+                            value: team[key],
+                            display: team[key].toString(),
+                            type: `Team data - ${typeof team[key]}`
+                        });
+                    });
+                });
+            }
+
+            return otherData;
         }
 
         async function debugPGCR() {
@@ -347,7 +552,7 @@
                 document.getElementById('results').style.display = 'none';
 
                 // Get PGCR data
-                const pgcrData = await getPGCR(instanceId);
+                pgcrData = await getPGCR(instanceId);
                 
                 if (!pgcrData) {
                     throw new Error('No PGCR data found');
@@ -355,103 +560,20 @@
 
                 console.log('Full PGCR Data:', pgcrData);
 
-                // Show basic PGCR info
-                const basicInfo = {
-                    hasEntries: !!pgcrData.entries,
-                    entryCount: pgcrData.entries ? pgcrData.entries.length : 0,
-                    hasTeams: !!pgcrData.teams,
-                    hasActivities: !!pgcrData.activities,
-                    activityType: pgcrData.activityDetails?.mode,
-                    activityHash: pgcrData.activityDetails?.directorActivityHash
-                };
+                // Generate summary
+                generateSummary();
 
-                console.log('Basic PGCR Info:', basicInfo);
-
-                // Display quick summary
-                displayQuickSummary(basicInfo);
-
-                // Analyze first player entry in detail
+                // Generate player stats for first player
                 if (pgcrData.entries && pgcrData.entries.length > 0) {
-                    const firstPlayer = pgcrData.entries[0];
-                    console.log('First Player Entry:', firstPlayer);
-
-                    // Analyze player values
-                    const playerAnalysis = analyzePlayerValues(firstPlayer);
-                    console.log('Player Values Analysis:', playerAnalysis);
-
-                    // Analyze weapon data
-                    const weaponAnalysis = analyzeWeaponData(firstPlayer);
-                    console.log('Weapon Analysis:', weaponAnalysis);
-
-                    // Show the analyses
-                    displayPlayerAnalysis(playerAnalysis);
-                    displayWeaponAnalysis(weaponAnalysis);
+                    generatePlayerStats();
+                    generateWeaponStats();
                 }
 
-                // Analyze structure for all possible fields
-                const allFields = new Set();
-                extractAllFields(pgcrData, '', allFields);
+                // Generate other data
+                generateOtherData();
 
-                // Find relevant fields with better keyword matching
-                const playerStatKeywords = ['kill', 'death', 'assist', 'damage', 'ability', 'grenade', 'melee', 'super', 'precision', 'score'];
-                const weaponKeywords = ['weapon', 'damage', 'kill', 'precision', 'referenceId'];
-                const bossDamageKeywords = ['boss', 'ultimate', 'champion', 'damage'];
-
-                const playerFields = findRelevantFields(allFields, playerStatKeywords);
-                const weaponFields = findRelevantFields(allFields, weaponKeywords);
-                const bossDamageFields = findRelevantFields(allFields, bossDamageKeywords);
-
-                // Display results
-                displayFieldAnalysis('playerFields', playerFields);
-                displayFieldAnalysis('weaponFields', weaponFields);
-                displayFieldAnalysis('bossDamageFields', bossDamageFields);
-
-                // Show sample structures
-                if (pgcrData.entries && pgcrData.entries.length > 0) {
-                    const samplePlayer = pgcrData.entries[0];
-                    document.getElementById('samplePlayer').textContent = JSON.stringify(samplePlayer, null, 2);
-
-                    // Show weapon structure if available
-                    if (samplePlayer.extended && samplePlayer.extended.weapons && samplePlayer.extended.weapons.length > 0) {
-                        const sampleWeapon = samplePlayer.extended.weapons[0];
-                        document.getElementById('sampleWeapon').textContent = JSON.stringify(sampleWeapon, null, 2);
-                    } else {
-                        document.getElementById('sampleWeapon').textContent = 'No weapon data found in extended section\n\nChecking for weapons in other locations...';
-                        
-                        // Check for weapons in other possible locations
-                        const possibleWeaponLocations = [];
-                        if (samplePlayer.weapons) possibleWeaponLocations.push('entry.weapons');
-                        if (samplePlayer.extended) possibleWeaponLocations.push('entry.extended (keys: ' + Object.keys(samplePlayer.extended).join(', ') + ')');
-                        
-                        document.getElementById('sampleWeapon').textContent += '\n\nPossible weapon locations found: ' + 
-                            (possibleWeaponLocations.length > 0 ? possibleWeaponLocations.join(', ') : 'None');
-                    }
-                }
-
-                // Show ALL top-level keys
-                const topLevelKeys = Object.keys(pgcrData);
-                const topLevelAnalysis = `Top-level PGCR keys: ${topLevelKeys.join(', ')}\n\n`;
-                
-                // Show entry structure keys if available
-                let entryKeysAnalysis = '';
-                if (pgcrData.entries && pgcrData.entries.length > 0) {
-                    const entryKeys = Object.keys(pgcrData.entries[0]);
-                    entryKeysAnalysis = `Player entry keys: ${entryKeys.join(', ')}\n\n`;
-                    
-                    // Check if values exist and what's in them
-                    if (pgcrData.entries[0].values) {
-                        const valueKeys = Object.keys(pgcrData.entries[0].values);
-                        entryKeysAnalysis += `Player values keys: ${valueKeys.join(', ')}\n\n`;
-                    } else {
-                        entryKeysAnalysis += `No 'values' property found in player entry\n\n`;
-                    }
-                }
-
-                // Show truncated full structure
-                const fullStructureLines = JSON.stringify(pgcrData, null, 2).split('\n');
-                document.getElementById('fullStructure').textContent = topLevelAnalysis + entryKeysAnalysis + 
-                    fullStructureLines.slice(0, 100).join('\n') + 
-                    (fullStructureLines.length > 100 ? '\n... (truncated, check console for full data)' : '');
+                // Generate raw PGCR (NOT TRUNCATED)
+                generateRawPGCR();
 
                 // Hide loading and show results
                 document.getElementById('loading').style.display = 'none';
@@ -464,49 +586,82 @@
             }
         }
 
-        function displayFieldAnalysis(containerId, fields) {
-            const container = document.getElementById(containerId);
-            if (fields.length > 0) {
-                container.innerHTML = fields.map(field => `<div class="field-item">${field}</div>`).join('');
-            } else {
-                container.innerHTML = '<div class="field-item">No relevant fields found</div>';
+        function generateSummary() {
+            const summary = {
+                hasEntries: !!pgcrData.entries,
+                entryCount: pgcrData.entries ? pgcrData.entries.length : 0,
+                hasTeams: !!pgcrData.teams,
+                hasActivities: !!pgcrData.activities,
+                activityType: pgcrData.activityDetails?.mode,
+                activityHash: pgcrData.activityDetails?.directorActivityHash,
+                hasExtendedData: pgcrData.entries && pgcrData.entries[0] && !!pgcrData.entries[0].extended,
+                hasWeaponData: pgcrData.entries && pgcrData.entries[0] && pgcrData.entries[0].extended && !!pgcrData.entries[0].extended.weapons
+            };
+
+            const summaryData = [
+                { name: 'Has Player Entries', value: summary.hasEntries, display: summary.hasEntries ? 'Yes' : 'No', type: 'Boolean' },
+                { name: 'Player Count', value: summary.entryCount, display: summary.entryCount.toString(), type: 'Number' },
+                { name: 'Has Teams', value: summary.hasTeams, display: summary.hasTeams ? 'Yes' : 'No', type: 'Boolean' },
+                { name: 'Has Activities Array', value: summary.hasActivities, display: summary.hasActivities ? 'Yes' : 'No', type: 'Boolean' },
+                { name: 'Activity Type/Mode', value: summary.activityType, display: summary.activityType?.toString() || 'N/A', type: 'Number' },
+                { name: 'Activity Hash', value: summary.activityHash, display: summary.activityHash?.toString() || 'N/A', type: 'Number' },
+                { name: 'Has Extended Data', value: summary.hasExtendedData, display: summary.hasExtendedData ? 'Yes' : 'No', type: 'Boolean' },
+                { name: 'Has Weapon Data', value: summary.hasWeaponData, display: summary.hasWeaponData ? 'Yes' : 'No', type: 'Boolean' }
+            ];
+
+            document.getElementById('summaryContent').innerHTML = createDataTable(summaryData, 'Activity Overview');
+        }
+
+        function generatePlayerStats() {
+            const firstPlayer = pgcrData.entries[0];
+            const playerStats = extractPlayerStats(firstPlayer);
+            
+            let content = createDataTable(playerStats, `Player Stats for ${firstPlayer.player.destinyUserInfo.displayName}`);
+            
+            // Add analysis of ability kills specifically
+            const abilityKills = playerStats.filter(stat => 
+                stat.name.includes('weaponKills') && 
+                (stat.name.includes('Ability') || stat.name.includes('Grenade') || stat.name.includes('Melee') || stat.name.includes('Super'))
+            );
+
+            if (abilityKills.length > 0) {
+                content += '<div class="section-title">Ability Kills Breakdown</div>';
+                content += createDataTable(abilityKills, 'Ability, Grenade, Melee, Super Kills');
             }
+
+            document.getElementById('playerStatsContent').innerHTML = content;
         }
 
-        function displayQuickSummary(basicInfo) {
-            const summaryHtml = `
-                <div class="field-item">Has Player Entries: ${basicInfo.hasEntries} (${basicInfo.entryCount} players)</div>
-                <div class="field-item">Has Teams: ${basicInfo.hasTeams}</div>
-                <div class="field-item">Has Activities: ${basicInfo.hasActivities}</div>
-                <div class="field-item">Activity Type: ${basicInfo.activityType || 'Unknown'}</div>
-                <div class="field-item">Activity Hash: ${basicInfo.activityHash || 'N/A'}</div>
-            `;
-            document.getElementById('quickSummary').innerHTML = summaryHtml;
-        }
-
-        function displayPlayerAnalysis(analysis) {
-            let html = `
-                <div class="field-item">Has Values: ${analysis.hasValues}</div>
-                <div class="field-item">Values Location: ${analysis.valuesLocation || 'Not found'}</div>
-                <div class="field-item">Available Stats: ${analysis.availableStats.length} (${analysis.availableStats.join(', ')})</div>
-            `;
+        function generateWeaponStats() {
+            const firstPlayer = pgcrData.entries[0];
+            const weapons = extractWeaponStats(firstPlayer);
             
-            // Add this to the player fields section
-            const container = document.getElementById('playerFields');
-            container.innerHTML = html + container.innerHTML;
+            let content = '';
+            
+            weapons.forEach(weapon => {
+                content += `
+                    <div class="weapon-section">
+                        <div class="weapon-header">Weapon ${weapon.index + 1} - Reference ID: ${weapon.referenceId}</div>
+                        ${createDataTable(weapon.stats, `Weapon Statistics`)}
+                    </div>
+                `;
+            });
+
+            if (weapons.length === 0) {
+                content = '<div>No weapon data found in this PGCR</div>';
+            }
+
+            document.getElementById('weaponStatsContent').innerHTML = content;
         }
 
-        function displayWeaponAnalysis(analysis) {
-            let html = `
-                <div class="field-item">Has Weapons: ${analysis.hasWeapons}</div>
-                <div class="field-item">Weapons Location: ${analysis.weaponsLocation || 'Not found'}</div>
-                <div class="field-item">Weapon Count: ${analysis.weaponCount}</div>
-                <div class="field-item">Available Weapon Stats: ${analysis.availableWeaponStats.length} (${analysis.availableWeaponStats.join(', ')})</div>
-            `;
-            
-            // Add this to the weapon fields section
-            const container = document.getElementById('weaponFields');
-            container.innerHTML = html + container.innerHTML;
+        function generateOtherData() {
+            const otherData = extractOtherData(pgcrData);
+            document.getElementById('otherDataContent').innerHTML = createDataTable(otherData, 'All Other Available Data');
+        }
+
+        function generateRawPGCR() {
+            // Show COMPLETE PGCR data - NOT TRUNCATED
+            document.getElementById('rawPGCRContent').textContent = JSON.stringify(pgcrData, null, 2);
         }
 
         function showError(message) {
