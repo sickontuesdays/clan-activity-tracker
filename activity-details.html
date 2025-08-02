@@ -198,10 +198,60 @@
             flex-shrink: 0;
         }
 
+        .player-emblem {
+            position: relative;
+            width: 200px;
+            height: 50px;
+            border-radius: 6px;
+            overflow: hidden;
+            border: 2px solid #444;
+            display: flex;
+            align-items: center;
+            background: linear-gradient(45deg, #1a1a2e, #16213e);
+            transition: all 0.3s ease;
+        }
+
+        .player-emblem:hover {
+            border-color: #f7931e;
+            transform: scale(1.02);
+        }
+
+        .emblem-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+        }
+
+        .emblem-icon {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 34px;
+            height: 34px;
+            border-radius: 4px;
+            border: 1px solid rgba(255, 255, 255, 0.4);
+            background: rgba(0, 0, 0, 0.3);
+            object-fit: cover;
+        }
+
         .player-name {
-            font-size: 1.4em;
-            color: #00ff00;
+            position: relative;
+            z-index: 2;
+            font-size: 1.1em;
+            color: #ffffff;
             font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+            padding: 0 12px;
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            letter-spacing: 0.5px;
         }
 
         .player-class {
@@ -211,6 +261,8 @@
             border-radius: 15px;
             font-size: 0.8em;
             color: #f7931e;
+            flex-shrink: 0;
+            margin-left: 10px;
         }
 
         .stat-grid {
@@ -514,6 +566,7 @@
         let pgcrData = null;
         let activityDefinition = null;
         let weaponDefinitionCache = new Map();
+        let emblemDefinitionCache = new Map();
         let expandedStates = {};
 
         function showError(message) {
@@ -590,6 +643,22 @@
                 return response;
             } catch (error) {
                 console.warn('Could not load weapon definition for hash:', weaponHash, error);
+                return null;
+            }
+        }
+
+        async function getEmblemDefinition(emblemHash) {
+            if (emblemDefinitionCache.has(emblemHash)) {
+                return emblemDefinitionCache.get(emblemHash);
+            }
+
+            try {
+                const endpoint = `/Destiny2/Manifest/DestinyInventoryItemDefinition/${emblemHash}/`;
+                const response = await makeAPIRequest(endpoint);
+                emblemDefinitionCache.set(emblemHash, response);
+                return response;
+            } catch (error) {
+                console.warn('Could not load emblem definition for hash:', emblemHash, error);
                 return null;
             }
         }
@@ -763,6 +832,29 @@
                 const stats = entry.values || {};
                 const extendedStats = entry.extended?.values || {};
                 
+                // Get emblem data
+                const emblemHash = player.emblemHash;
+                const emblemBackgroundPath = player.emblemBackgroundPath;
+                const emblemPath = player.emblemPath;
+                
+                // Get emblem definition for additional styling
+                let emblemDef = null;
+                if (emblemHash) {
+                    emblemDef = await getEmblemDefinition(emblemHash);
+                }
+                
+                // Create emblem HTML
+                const emblemBackgroundUrl = emblemBackgroundPath ? `https://www.bungie.net${emblemBackgroundPath}` : '';
+                const emblemIconUrl = emblemPath ? `https://www.bungie.net${emblemPath}` : '';
+                
+                const emblemHTML = `
+                    <div class="player-emblem">
+                        ${emblemBackgroundUrl ? `<img src="${emblemBackgroundUrl}" alt="Emblem Background" class="emblem-background" />` : ''}
+                        <div class="player-name">${player.destinyUserInfo.displayName}</div>
+                        ${emblemIconUrl ? `<img src="${emblemIconUrl}" alt="Emblem Icon" class="emblem-icon" />` : ''}
+                    </div>
+                `;
+                
                 // Combine stats from both locations
                 const allStats = { ...stats };
                 Object.keys(extendedStats).forEach(key => {
@@ -881,7 +973,7 @@
                 return `
                     <div class="player-card">
                         <div class="player-header">
-                            <div class="player-name">${player.destinyUserInfo.displayName}</div>
+                            ${emblemHTML}
                             <div class="player-class">${getClassName(entry.characterClass)}</div>
                         </div>
                         
