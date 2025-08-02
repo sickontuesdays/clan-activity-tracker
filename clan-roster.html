@@ -11,143 +11,6 @@
             box-sizing: border-box;
         }
 
-        // Debug Functions for Single Character Data
-        async function debugSinglePlayer() {
-            const playerName = document.getElementById('playerNameInput').value.trim();
-            if (!playerName) {
-                showDebugError('Please enter a player name');
-                return;
-            }
-
-            const debugBtn = document.getElementById('debugBtn');
-            debugBtn.disabled = true;
-            debugBtn.textContent = 'Loading...';
-
-            document.getElementById('debugResults').style.display = 'block';
-            document.getElementById('debugError').style.display = 'none';
-
-            try {
-                // Step 1: Search for the player
-                document.getElementById('searchResults').textContent = 'Searching for player...';
-                
-                const searchEndpoint = `/Destiny2/SearchDestinyPlayer/-1/${encodeURIComponent(playerName)}/`;
-                document.getElementById('searchResults').innerHTML = `<strong>API Call:</strong> GET ${searchEndpoint}<br><br><strong>Response:</strong><br>`;
-                
-                const searchResults = await makeAPIRequest(searchEndpoint);
-                document.getElementById('searchResults').innerHTML += `<pre>${JSON.stringify(searchResults, null, 2)}</pre>`;
-
-                if (!searchResults || searchResults.length === 0) {
-                    throw new Error('Player not found');
-                }
-
-                const player = searchResults[0];
-                const membershipType = player.membershipType;
-                const membershipId = player.membershipId;
-
-                // Step 2: Get Profile Data
-                document.getElementById('profileResults').textContent = 'Getting profile data...';
-                
-                const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=Profiles,Characters,CharacterProgressions,PresentationNodes,Records,CharacterActivities,Collectibles`;
-                document.getElementById('profileResults').innerHTML = `<strong>API Call:</strong> GET ${profileEndpoint}<br><br><strong>Response:</strong><br>`;
-                
-                const profileData = await makeAPIRequest(profileEndpoint);
-                document.getElementById('profileResults').innerHTML += `<pre>${JSON.stringify(profileData, null, 2)}</pre>`;
-
-                // Step 3: Parse Character Data
-                document.getElementById('parsedResults').textContent = 'Parsing character data...';
-                
-                const parsedData = {
-                    playerInfo: {
-                        displayName: player.displayName,
-                        membershipType: membershipType,
-                        membershipId: membershipId
-                    },
-                    profile: profileData.profile?.data || null,
-                    characters: profileData.characters?.data || null,
-                    characterProgressions: profileData.characterProgressions?.data || null,
-                    records: profileData.profileRecords?.data || null,
-                    presentationNodes: profileData.profilePresentationNodes?.data || null,
-                    collectibles: profileData.profileCollectibles?.data || null,
-                    activeCharacter: null,
-                    equippedTitle: null
-                };
-
-                // Find active character
-                if (parsedData.characters) {
-                    let latestDate = new Date(0);
-                    Object.entries(parsedData.characters).forEach(([charId, char]) => {
-                        const charDate = new Date(char.dateLastPlayed);
-                        if (charDate > latestDate) {
-                            latestDate = charDate;
-                            parsedData.activeCharacter = {
-                                characterId: charId,
-                                ...char
-                            };
-                        }
-                    });
-                }
-
-                // Look for equipped title in records
-                if (parsedData.records && parsedData.records.records) {
-                    const completedTitles = Object.entries(parsedData.records.records)
-                        .filter(([hash, record]) => {
-                            // Check if record is completed and might be a title
-                            return record.state !== undefined && (record.state & 1) === 0;
-                        })
-                        .slice(0, 10); // Limit to first 10 for debugging
-
-                    parsedData.completedTitlesHashes = completedTitles.map(([hash]) => hash);
-                }
-
-                document.getElementById('parsedResults').innerHTML = `<pre>${JSON.stringify(parsedData, null, 2)}</pre>`;
-
-                // Step 4: Get Title/Manifest Data
-                document.getElementById('titleResults').textContent = 'Getting title manifest data...';
-                
-                let titleData = {
-                    message: 'No completed titles found or unable to determine equipped title'
-                };
-
-                if (parsedData.completedTitlesHashes && parsedData.completedTitlesHashes.length > 0) {
-                    titleData = {
-                        note: 'Attempting to get manifest data for completed record hashes (first 3 only)',
-                        titleDefinitions: {}
-                    };
-
-                    // Try to get definitions for first 3 completed records
-                    for (let i = 0; i < Math.min(3, parsedData.completedTitlesHashes.length); i++) {
-                        const hash = parsedData.completedTitlesHashes[i];
-                        try {
-                            const recordEndpoint = `/Destiny2/Manifest/DestinyRecordDefinition/${hash}/`;
-                            const recordDef = await makeAPIRequest(recordEndpoint);
-                            titleData.titleDefinitions[hash] = {
-                                endpoint: recordEndpoint,
-                                definition: recordDef
-                            };
-                        } catch (error) {
-                            titleData.titleDefinitions[hash] = {
-                                error: error.message
-                            };
-                        }
-                    }
-                }
-
-                document.getElementById('titleResults').innerHTML = `<pre>${JSON.stringify(titleData, null, 2)}</pre>`;
-
-            } catch (error) {
-                console.error('Debug failed:', error);
-                showDebugError(`Debug failed: ${error.message}`);
-            } finally {
-                debugBtn.disabled = false;
-                debugBtn.textContent = 'Debug Player Data';
-            }
-        }
-
-        function showDebugError(message) {
-            document.getElementById('debugError').textContent = message;
-            document.getElementById('debugError').style.display = 'block';
-        }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -588,6 +451,143 @@
         let clanData = null;
         let clanMembers = [];
         let rosterData = [];
+
+        // Debug Functions for Single Character Data
+        async function debugSinglePlayer() {
+            const playerName = document.getElementById('playerNameInput').value.trim();
+            if (!playerName) {
+                showDebugError('Please enter a player name');
+                return;
+            }
+
+            const debugBtn = document.getElementById('debugBtn');
+            debugBtn.disabled = true;
+            debugBtn.textContent = 'Loading...';
+
+            document.getElementById('debugResults').style.display = 'block';
+            document.getElementById('debugError').style.display = 'none';
+
+            try {
+                // Step 1: Search for the player
+                document.getElementById('searchResults').textContent = 'Searching for player...';
+                
+                const searchEndpoint = `/Destiny2/SearchDestinyPlayer/-1/${encodeURIComponent(playerName)}/`;
+                document.getElementById('searchResults').innerHTML = `<strong>API Call:</strong> GET ${searchEndpoint}<br><br><strong>Response:</strong><br>`;
+                
+                const searchResults = await makeAPIRequest(searchEndpoint);
+                document.getElementById('searchResults').innerHTML += `<pre>${JSON.stringify(searchResults, null, 2)}</pre>`;
+
+                if (!searchResults || searchResults.length === 0) {
+                    throw new Error('Player not found');
+                }
+
+                const player = searchResults[0];
+                const membershipType = player.membershipType;
+                const membershipId = player.membershipId;
+
+                // Step 2: Get Profile Data
+                document.getElementById('profileResults').textContent = 'Getting profile data...';
+                
+                const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=Profiles,Characters,CharacterProgressions,PresentationNodes,Records,CharacterActivities,Collectibles`;
+                document.getElementById('profileResults').innerHTML = `<strong>API Call:</strong> GET ${profileEndpoint}<br><br><strong>Response:</strong><br>`;
+                
+                const profileData = await makeAPIRequest(profileEndpoint);
+                document.getElementById('profileResults').innerHTML += `<pre>${JSON.stringify(profileData, null, 2)}</pre>`;
+
+                // Step 3: Parse Character Data
+                document.getElementById('parsedResults').textContent = 'Parsing character data...';
+                
+                const parsedData = {
+                    playerInfo: {
+                        displayName: player.displayName,
+                        membershipType: membershipType,
+                        membershipId: membershipId
+                    },
+                    profile: profileData.profile?.data || null,
+                    characters: profileData.characters?.data || null,
+                    characterProgressions: profileData.characterProgressions?.data || null,
+                    records: profileData.profileRecords?.data || null,
+                    presentationNodes: profileData.profilePresentationNodes?.data || null,
+                    collectibles: profileData.profileCollectibles?.data || null,
+                    activeCharacter: null,
+                    equippedTitle: null
+                };
+
+                // Find active character
+                if (parsedData.characters) {
+                    let latestDate = new Date(0);
+                    Object.entries(parsedData.characters).forEach(([charId, char]) => {
+                        const charDate = new Date(char.dateLastPlayed);
+                        if (charDate > latestDate) {
+                            latestDate = charDate;
+                            parsedData.activeCharacter = {
+                                characterId: charId,
+                                ...char
+                            };
+                        }
+                    });
+                }
+
+                // Look for equipped title in records
+                if (parsedData.records && parsedData.records.records) {
+                    const completedTitles = Object.entries(parsedData.records.records)
+                        .filter(([hash, record]) => {
+                            // Check if record is completed and might be a title
+                            return record.state !== undefined && (record.state & 1) === 0;
+                        })
+                        .slice(0, 10); // Limit to first 10 for debugging
+
+                    parsedData.completedTitlesHashes = completedTitles.map(([hash]) => hash);
+                }
+
+                document.getElementById('parsedResults').innerHTML = `<pre>${JSON.stringify(parsedData, null, 2)}</pre>`;
+
+                // Step 4: Get Title/Manifest Data
+                document.getElementById('titleResults').textContent = 'Getting title manifest data...';
+                
+                let titleData = {
+                    message: 'No completed titles found or unable to determine equipped title'
+                };
+
+                if (parsedData.completedTitlesHashes && parsedData.completedTitlesHashes.length > 0) {
+                    titleData = {
+                        note: 'Attempting to get manifest data for completed record hashes (first 3 only)',
+                        titleDefinitions: {}
+                    };
+
+                    // Try to get definitions for first 3 completed records
+                    for (let i = 0; i < Math.min(3, parsedData.completedTitlesHashes.length); i++) {
+                        const hash = parsedData.completedTitlesHashes[i];
+                        try {
+                            const recordEndpoint = `/Destiny2/Manifest/DestinyRecordDefinition/${hash}/`;
+                            const recordDef = await makeAPIRequest(recordEndpoint);
+                            titleData.titleDefinitions[hash] = {
+                                endpoint: recordEndpoint,
+                                definition: recordDef
+                            };
+                        } catch (error) {
+                            titleData.titleDefinitions[hash] = {
+                                error: error.message
+                            };
+                        }
+                    }
+                }
+
+                document.getElementById('titleResults').innerHTML = `<pre>${JSON.stringify(titleData, null, 2)}</pre>`;
+
+            } catch (error) {
+                console.error('Debug failed:', error);
+                showDebugError(`Debug failed: ${error.message}`);
+            } finally {
+                debugBtn.disabled = false;
+                debugBtn.textContent = 'Debug Player Data';
+            }
+        }
+
+        function showDebugError(message) {
+            document.getElementById('debugError').textContent = message;
+            document.getElementById('debugError').style.display = 'block';
+        }
 
         function showError(message) {
             document.getElementById('error').textContent = message;
