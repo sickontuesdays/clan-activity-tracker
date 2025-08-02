@@ -11,46 +11,6 @@
             box-sizing: border-box;
         }
 
-        // Additional stats interaction functions
-        let expandedStates = {};
-        
-        function toggleAdditionalStats(playerIndex) {
-            const title = document.getElementById(`additional-stats-title-${playerIndex}`);
-            const grid = document.getElementById(`additional-stats-grid-${playerIndex}`);
-            const tooltip = document.getElementById(`additional-stats-tooltip-${playerIndex}`);
-            
-            const isExpanded = expandedStates[playerIndex] || false;
-            expandedStates[playerIndex] = !isExpanded;
-            
-            if (expandedStates[playerIndex]) {
-                // Expand - show grid, hide tooltip, disable hover
-                grid.classList.add('expanded');
-                title.classList.add('expanded');
-                tooltip.classList.remove('visible');
-                title.setAttribute('data-hover-disabled', 'true');
-            } else {
-                // Collapse - hide grid, enable hover
-                grid.classList.remove('expanded');
-                title.classList.remove('expanded');
-                title.removeAttribute('data-hover-disabled');
-            }
-        }
-        
-        function showAdditionalStatsTooltip(playerIndex) {
-            const title = document.getElementById(`additional-stats-title-${playerIndex}`);
-            const tooltip = document.getElementById(`additional-stats-tooltip-${playerIndex}`);
-            
-            // Only show tooltip if not expanded (hover disabled)
-            if (!title.hasAttribute('data-hover-disabled')) {
-                tooltip.classList.add('visible');
-            }
-        }
-        
-        function hideAdditionalStatsTooltip(playerIndex) {
-            const tooltip = document.getElementById(`additional-stats-tooltip-${playerIndex}`);
-            tooltip.classList.remove('visible');
-        }
-
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -212,10 +172,6 @@
             align-items: start;
         }
 
-        .player-row {
-            display: contents;
-        }
-
         .player-card {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid #444;
@@ -296,12 +252,11 @@
             min-height: 0;
         }
 
-        .weapons-section, .additional-stats-section {
-            flex: 1;
-            min-height: 0;
+        .weapons-section {
+            margin-bottom: 15px;
         }
 
-        .weapons-title, .additional-stats-title {
+        .weapons-title {
             color: #f7931e;
             font-size: 1.1em;
             margin-bottom: 10px;
@@ -338,10 +293,44 @@
             font-size: 0.75em;
         }
 
+        .additional-stats-section {
+            position: relative;
+        }
+
+        .additional-stats-title {
+            color: #f7931e;
+            font-size: 1.1em;
+            margin-bottom: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+            user-select: none;
+            position: relative;
+        }
+
+        .additional-stats-title:hover {
+            background: rgba(247, 147, 30, 0.2);
+            border-color: #f7931e;
+        }
+
+        .additional-stats-title.expanded {
+            background: rgba(247, 147, 30, 0.3);
+            border-color: #f7931e;
+        }
+
         .additional-stats-grid {
-            display: flex;
+            display: none;
             flex-direction: column;
             gap: 4px;
+            margin-top: 10px;
+        }
+
+        .additional-stats-grid.expanded {
+            display: flex;
         }
 
         .additional-stat-item {
@@ -362,6 +351,50 @@
         }
 
         .additional-stat-item span:last-child {
+            color: #f7931e;
+            font-weight: bold;
+            font-size: 1em;
+        }
+
+        .additional-stats-tooltip {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.95);
+            border: 1px solid #f7931e;
+            border-radius: 8px;
+            padding: 15px;
+            z-index: 1000;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.8);
+            display: none;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 5px;
+        }
+
+        .additional-stats-tooltip.visible {
+            display: block;
+        }
+
+        .tooltip-stat-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 8px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            font-size: 0.75em;
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 4px;
+        }
+
+        .tooltip-stat-item span:first-child {
+            color: #aaa;
+            margin-bottom: 2px;
+            font-size: 0.9em;
+        }
+
+        .tooltip-stat-item span:last-child {
             color: #f7931e;
             font-weight: bold;
             font-size: 1em;
@@ -465,6 +498,7 @@
         let pgcrData = null;
         let activityDefinition = null;
         let weaponDefinitionCache = new Map();
+        let expandedStates = {};
 
         function showError(message) {
             document.getElementById('error').textContent = message;
@@ -606,30 +640,6 @@
             document.getElementById('playerCount').textContent = pgcrData.entries.length;
         }
 
-        function renderActivityMetadata() {
-            // Call this function but don't display the results
-            if (!pgcrData) return;
-
-            const activity = pgcrData.activityDetails;
-            const metadata = [];
-
-            // Basic activity info
-            const basicInfo = {
-                title: 'Basic Information',
-                items: [
-                    ['Mode', getActivityModeString(activity.mode)],
-                    ['Mode ID', activity.mode],
-                    ['Playlist', activity.playlistActivityHash || 'N/A'],
-                    ['Started from Beginning', pgcrData.activityWasStartedFromBeginning ? 'Yes' : 'No'],
-                    ['Standing', activity.standing !== undefined ? activity.standing : 'N/A']
-                ]
-            };
-            metadata.push(basicInfo);
-
-            // Store but don't display
-            console.log('Activity metadata loaded:', metadata);
-        }
-
         function renderTeamStats() {
             if (!pgcrData || !pgcrData.entries) return;
 
@@ -684,6 +694,45 @@
                 }).join('');
 
             document.getElementById('teamStats').innerHTML = teamStatsHTML;
+        }
+
+        function toggleAdditionalStats(playerIndex) {
+            const title = document.querySelector(`#additional-stats-title-${playerIndex}`);
+            const grid = document.querySelector(`#additional-stats-grid-${playerIndex}`);
+            const tooltip = document.querySelector(`#additional-stats-tooltip-${playerIndex}`);
+            
+            const isExpanded = expandedStates[playerIndex] || false;
+            expandedStates[playerIndex] = !isExpanded;
+            
+            if (expandedStates[playerIndex]) {
+                // Expand - show grid, hide tooltip, disable hover
+                grid.classList.add('expanded');
+                title.classList.add('expanded');
+                tooltip.classList.remove('visible');
+                title.setAttribute('data-hover-disabled', 'true');
+            } else {
+                // Collapse - hide grid, enable hover
+                grid.classList.remove('expanded');
+                title.classList.remove('expanded');
+                title.removeAttribute('data-hover-disabled');
+            }
+        }
+        
+        function showAdditionalStatsTooltip(playerIndex) {
+            const title = document.querySelector(`#additional-stats-title-${playerIndex}`);
+            const tooltip = document.querySelector(`#additional-stats-tooltip-${playerIndex}`);
+            
+            // Only show tooltip if not expanded (hover disabled)
+            if (!title.hasAttribute('data-hover-disabled')) {
+                tooltip.classList.add('visible');
+            }
+        }
+        
+        function hideAdditionalStatsTooltip(playerIndex) {
+            const tooltip = document.querySelector(`#additional-stats-tooltip-${playerIndex}`);
+            if (tooltip) {
+                tooltip.classList.remove('visible');
+            }
         }
 
         async function renderPlayerStats() {
@@ -800,10 +849,7 @@
                 const additionalStatsSection = additionalStatsData.length > 0 ? `
                     <div class="additional-stats-section">
                         <div class="additional-stats-title" 
-                             id="additional-stats-title-${playerIndex}"
-                             onclick="toggleAdditionalStats(${playerIndex})"
-                             onmouseenter="showAdditionalStatsTooltip(${playerIndex})"
-                             onmouseleave="hideAdditionalStatsTooltip(${playerIndex})">
+                             id="additional-stats-title-${playerIndex}">
                             Additional Stats (${additionalStatsData.length})
                         </div>
                         <div class="additional-stats-grid" id="additional-stats-grid-${playerIndex}">
@@ -837,6 +883,24 @@
             container.innerHTML = playerCards.join('');
             document.getElementById('playerStats').innerHTML = '';
             document.getElementById('playerStats').appendChild(container);
+            
+            // Add event listeners for additional stats interaction
+            setupAdditionalStatsListeners();
+        }
+
+        function setupAdditionalStatsListeners() {
+            const titles = document.querySelectorAll('[id^="additional-stats-title-"]');
+            
+            titles.forEach(title => {
+                const playerIndex = parseInt(title.id.split('-')[3]);
+                
+                // Click event
+                title.addEventListener('click', () => toggleAdditionalStats(playerIndex));
+                
+                // Mouse events
+                title.addEventListener('mouseenter', () => showAdditionalStatsTooltip(playerIndex));
+                title.addEventListener('mouseleave', () => hideAdditionalStatsTooltip(playerIndex));
+            });
         }
 
         function getUrlParameter(name) {
@@ -869,7 +933,6 @@
                 }
 
                 renderActivityOverview();
-                renderActivityMetadata();
                 renderTeamStats();
                 await renderPlayerStats();
 
