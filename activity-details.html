@@ -200,20 +200,20 @@
 
         .player-emblem {
             position: relative;
-            width: 200px;
-            height: 50px;
-            border-radius: 6px;
+            width: 240px;
+            height: 54px;
+            border-radius: 4px;
             overflow: hidden;
-            border: 2px solid #444;
+            border: 1px solid #555;
             display: flex;
             align-items: center;
-            background: linear-gradient(45deg, #1a1a2e, #16213e);
-            transition: all 0.3s ease;
+            background: #000;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
         }
 
         .player-emblem:hover {
             border-color: #f7931e;
-            transform: scale(1.02);
+            transform: scale(1.01);
         }
 
         .emblem-background {
@@ -223,35 +223,62 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
-            opacity: 0.9;
+            object-position: center;
+        }
+
+        .emblem-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0.8) 100%);
         }
 
         .emblem-icon {
             position: absolute;
-            right: 8px;
+            right: 6px;
             top: 50%;
             transform: translateY(-50%);
-            width: 34px;
-            height: 34px;
-            border-radius: 4px;
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            background: rgba(0, 0, 0, 0.3);
+            width: 42px;
+            height: 42px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.8);
             object-fit: cover;
+            z-index: 3;
+        }
+
+        .emblem-content {
+            position: relative;
+            z-index: 2;
+            padding: 8px 54px 8px 12px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
         }
 
         .player-name {
-            position: relative;
-            z-index: 2;
             font-size: 1.1em;
             color: #ffffff;
-            font-weight: bold;
-            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
-            padding: 0 12px;
-            flex: 1;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+            line-height: 1.2;
+            margin: 0;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
-            letter-spacing: 0.5px;
+        }
+
+        .emblem-subtitle {
+            font-size: 0.75em;
+            color: rgba(255, 255, 255, 0.8);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+            margin-top: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .player-class {
@@ -837,21 +864,39 @@
                 const emblemBackgroundPath = player.emblemBackgroundPath;
                 const emblemPath = player.emblemPath;
                 
+                // Debug emblem data
+                console.log('Player emblem data:', {
+                    name: player.destinyUserInfo.displayName,
+                    emblemHash,
+                    emblemBackgroundPath,
+                    emblemPath
+                });
+                
                 // Get emblem definition for additional styling
                 let emblemDef = null;
                 if (emblemHash) {
                     emblemDef = await getEmblemDefinition(emblemHash);
                 }
                 
-                // Create emblem HTML
+                // Create emblem URLs - ensure they're full URLs
                 const emblemBackgroundUrl = emblemBackgroundPath ? `https://www.bungie.net${emblemBackgroundPath}` : '';
                 const emblemIconUrl = emblemPath ? `https://www.bungie.net${emblemPath}` : '';
                 
+                console.log('Emblem URLs:', {
+                    background: emblemBackgroundUrl,
+                    icon: emblemIconUrl
+                });
+                
+                // Create emblem HTML with improved structure
                 const emblemHTML = `
                     <div class="player-emblem">
-                        ${emblemBackgroundUrl ? `<img src="${emblemBackgroundUrl}" alt="Emblem Background" class="emblem-background" />` : ''}
-                        <div class="player-name">${player.destinyUserInfo.displayName}</div>
-                        ${emblemIconUrl ? `<img src="${emblemIconUrl}" alt="Emblem Icon" class="emblem-icon" />` : ''}
+                        ${emblemBackgroundUrl ? `<img src="${emblemBackgroundUrl}" alt="Emblem Background" class="emblem-background" onerror="console.log('Failed to load emblem background:', this.src)" />` : ''}
+                        <div class="emblem-overlay"></div>
+                        <div class="emblem-content">
+                            <div class="player-name">${player.destinyUserInfo.displayName}</div>
+                            <div class="emblem-subtitle">Guardian</div>
+                        </div>
+                        ${emblemIconUrl ? `<img src="${emblemIconUrl}" alt="Emblem Icon" class="emblem-icon" onerror="console.log('Failed to load emblem icon:', this.src)" />` : ''}
                     </div>
                 `;
                 
