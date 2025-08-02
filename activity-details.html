@@ -166,16 +166,14 @@
         }
 
         .player-rows-container {
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            align-items: start;
         }
 
         .player-row {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 20px;
-            min-height: 600px;
+            display: contents;
         }
 
         .player-card {
@@ -186,7 +184,7 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            height: 600px;
+            min-height: 580px;
         }
 
         .player-card:hover {
@@ -334,13 +332,13 @@
         }
 
         @media (max-width: 1400px) {
-            .player-row {
+            .player-rows-container {
                 grid-template-columns: repeat(2, 1fr);
             }
         }
 
         @media (max-width: 900px) {
-            .player-row {
+            .player-rows-container {
                 grid-template-columns: 1fr;
             }
             
@@ -652,138 +650,130 @@
             if (!pgcrData || !pgcrData.entries) return;
 
             const players = pgcrData.entries;
-            const rowsContainer = document.createElement('div');
-            rowsContainer.className = 'player-rows-container';
+            const container = document.createElement('div');
+            container.className = 'player-rows-container';
 
-            // Group players into rows of 3
-            for (let i = 0; i < players.length; i += 3) {
-                const rowPlayers = players.slice(i, i + 3);
-                const rowDiv = document.createElement('div');
-                rowDiv.className = 'player-row';
+            // Create player cards directly in the grid container
+            const playerCards = await Promise.all(players.map(async (entry) => {
+                const player = entry.player;
+                const stats = entry.values || {};
+                const extendedStats = entry.extended?.values || {};
                 
-                const rowHTML = await Promise.all(rowPlayers.map(async (entry) => {
-                    const player = entry.player;
-                    const stats = entry.values || {};
-                    const extendedStats = entry.extended?.values || {};
-                    
-                    // Combine stats from both locations
-                    const allStats = { ...stats };
-                    Object.keys(extendedStats).forEach(key => {
-                        allStats[key] = extendedStats[key];
-                    });
-                    
-                    // Main stats - always show ability kills even if 0
-                    const mainStats = [
-                        { key: 'kills', label: 'Kills' },
-                        { key: 'deaths', label: 'Deaths' },
-                        { key: 'assists', label: 'Assists' },
-                        { key: 'score', label: 'Score' },
-                        { key: 'precisionKills', label: 'Precision' },
-                        { key: 'weaponKillsAbility', label: 'Ability' },
-                        { key: 'weaponKillsGrenade', label: 'Grenade' },
-                        { key: 'weaponKillsMelee', label: 'Melee' },
-                        { key: 'weaponKillsSuper', label: 'Super' }
-                    ];
+                // Combine stats from both locations
+                const allStats = { ...stats };
+                Object.keys(extendedStats).forEach(key => {
+                    allStats[key] = extendedStats[key];
+                });
+                
+                // Main stats - always show ability kills even if 0
+                const mainStats = [
+                    { key: 'kills', label: 'Kills' },
+                    { key: 'deaths', label: 'Deaths' },
+                    { key: 'assists', label: 'Assists' },
+                    { key: 'score', label: 'Score' },
+                    { key: 'precisionKills', label: 'Precision' },
+                    { key: 'weaponKillsAbility', label: 'Ability' },
+                    { key: 'weaponKillsGrenade', label: 'Grenade' },
+                    { key: 'weaponKillsMelee', label: 'Melee' },
+                    { key: 'weaponKillsSuper', label: 'Super' }
+                ];
 
-                    const mainStatsHTML = mainStats.map(statInfo => {
-                        const value = allStats[statInfo.key]?.basic?.value || 0;
+                const mainStatsHTML = mainStats.map(statInfo => {
+                    const value = allStats[statInfo.key]?.basic?.value || 0;
+                    
+                    return `
+                        <div class="stat-item">
+                            <span class="stat-value">${typeof value === 'number' ? value.toLocaleString() : value}</span>
+                            <span class="stat-label">${statInfo.label}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // Additional stats for remaining section - all other stats
+                const excludedStats = new Set(['kills', 'deaths', 'assists', 'score', 'precisionKills', 
+                                             'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
+                                             'activityDurationSeconds', 'completionReason', 'startSeconds']);
+                const additionalStats = Object.keys(allStats)
+                    .filter(key => !excludedStats.has(key) && allStats[key] && allStats[key].basic)
+                    .map(statKey => {
+                        const value = allStats[statKey].basic.value;
+                        let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
                         
                         return `
-                            <div class="stat-item">
-                                <span class="stat-value">${typeof value === 'number' ? value.toLocaleString() : value}</span>
-                                <span class="stat-label">${statInfo.label}</span>
+                            <div class="additional-stat-item">
+                                <span>${label}</span>
+                                <span>${typeof value === 'number' ? value.toLocaleString() : value}</span>
                             </div>
                         `;
                     }).join('');
 
-                    // Additional stats for remaining section - all other stats
-                    const excludedStats = new Set(['kills', 'deaths', 'assists', 'score', 'precisionKills', 
-                                                 'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
-                                                 'activityDurationSeconds', 'completionReason', 'startSeconds']);
-                    const additionalStats = Object.keys(allStats)
-                        .filter(key => !excludedStats.has(key) && allStats[key] && allStats[key].basic)
-                        .map(statKey => {
-                            const value = allStats[statKey].basic.value;
-                            let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                            
-                            return `
-                                <div class="additional-stat-item">
-                                    <span>${label}</span>
-                                    <span>${typeof value === 'number' ? value.toLocaleString() : value}</span>
-                                </div>
-                            `;
-                        }).join('');
-
-                    // Weapons section
-                    let weaponsHTML = '';
-                    if (entry.extended && entry.extended.weapons && entry.extended.weapons.length > 0) {
-                        const weaponStats = await Promise.all(entry.extended.weapons.map(async (weapon) => {
-                            const kills = weapon.values.uniqueWeaponKills ? weapon.values.uniqueWeaponKills.basic.value : 0;
-                            const precisionKills = weapon.values.uniqueWeaponPrecisionKills ? weapon.values.uniqueWeaponPrecisionKills.basic.value : 0;
-                            
-                            // Get weapon name
-                            const weaponDef = await getWeaponDefinition(weapon.referenceId);
-                            const weaponName = weaponDef ? weaponDef.displayProperties.name : `Weapon ${weapon.referenceId}`;
-                            
-                            return `
-                                <div class="weapon-item">
-                                    <span class="weapon-name">${weaponName}</span>
-                                    <div class="weapon-stats-row">
-                                        <span>${kills} kills</span>
-                                        <span>${precisionKills} precision</span>
-                                    </div>
-                                </div>
-                            `;
-                        }));
+                // Weapons section
+                let weaponsHTML = '';
+                if (entry.extended && entry.extended.weapons && entry.extended.weapons.length > 0) {
+                    const weaponStats = await Promise.all(entry.extended.weapons.map(async (weapon) => {
+                        const kills = weapon.values.uniqueWeaponKills ? weapon.values.uniqueWeaponKills.basic.value : 0;
+                        const precisionKills = weapon.values.uniqueWeaponPrecisionKills ? weapon.values.uniqueWeaponPrecisionKills.basic.value : 0;
                         
-                        weaponsHTML = `
-                            <div class="weapons-section">
-                                <div class="weapons-title">Weapons (${entry.extended.weapons.length})</div>
-                                <div class="weapon-stats">${weaponStats.join('')}</div>
-                            </div>
-                        `;
-                    } else {
-                        weaponsHTML = `
-                            <div class="weapons-section">
-                                <div class="weapons-title">Weapons (0)</div>
-                                <div class="weapon-stats">No weapon data available</div>
-                            </div>
-                        `;
-                    }
-
-                    return `
-                        <div class="player-card">
-                            <div class="player-header">
-                                <div class="player-name">${player.destinyUserInfo.displayName}</div>
-                                <div class="player-class">${getClassName(entry.characterClass)}</div>
-                            </div>
-                            
-                            <div class="stat-grid">
-                                ${mainStatsHTML}
-                            </div>
-
-                            <div class="additional-sections">
-                                ${additionalStats ? `
-                                <div class="additional-stats-section">
-                                    <div class="additional-stats-title">Additional Stats (${Object.keys(allStats).filter(key => !excludedStats.has(key) && allStats[key] && allStats[key].basic).length})</div>
-                                    <div class="additional-stats-grid">
-                                        ${additionalStats}
-                                    </div>
+                        // Get weapon name
+                        const weaponDef = await getWeaponDefinition(weapon.referenceId);
+                        const weaponName = weaponDef ? weaponDef.displayProperties.name : `Weapon ${weapon.referenceId}`;
+                        
+                        return `
+                            <div class="weapon-item">
+                                <span class="weapon-name">${weaponName}</span>
+                                <div class="weapon-stats-row">
+                                    <span>${kills} kills</span>
+                                    <span>${precisionKills} precision</span>
                                 </div>
-                                ` : ''}
-                                
-                                ${weaponsHTML}
                             </div>
+                        `;
+                    }));
+                    
+                    weaponsHTML = `
+                        <div class="weapons-section">
+                            <div class="weapons-title">Weapons (${entry.extended.weapons.length})</div>
+                            <div class="weapon-stats">${weaponStats.join('')}</div>
                         </div>
                     `;
-                }));
+                } else {
+                    weaponsHTML = `
+                        <div class="weapons-section">
+                            <div class="weapons-title">Weapons (0)</div>
+                            <div class="weapon-stats">No weapon data available</div>
+                        </div>
+                    `;
+                }
 
-                rowDiv.innerHTML = rowHTML.join('');
-                rowsContainer.appendChild(rowDiv);
-            }
+                return `
+                    <div class="player-card">
+                        <div class="player-header">
+                            <div class="player-name">${player.destinyUserInfo.displayName}</div>
+                            <div class="player-class">${getClassName(entry.characterClass)}</div>
+                        </div>
+                        
+                        <div class="stat-grid">
+                            ${mainStatsHTML}
+                        </div>
 
+                        <div class="additional-sections">
+                            ${additionalStats ? `
+                            <div class="additional-stats-section">
+                                <div class="additional-stats-title">Additional Stats (${Object.keys(allStats).filter(key => !excludedStats.has(key) && allStats[key] && allStats[key].basic).length})</div>
+                                <div class="additional-stats-grid">
+                                    ${additionalStats}
+                                </div>
+                            </div>
+                            ` : ''}
+                            
+                            ${weaponsHTML}
+                        </div>
+                    </div>
+                `;
+            }));
+
+            container.innerHTML = playerCards.join('');
             document.getElementById('playerStats').innerHTML = '';
-            document.getElementById('playerStats').appendChild(rowsContainer);
+            document.getElementById('playerStats').appendChild(container);
         }
 
         function getUrlParameter(name) {
