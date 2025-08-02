@@ -271,26 +271,42 @@
 
         .weapon-item {
             background: rgba(0, 0, 0, 0.2);
-            padding: 6px;
+            padding: 8px;
             border-radius: 4px;
             border: 1px solid #444;
-            font-size: 0.8em;
+            font-size: 0.85em;
             flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .weapon-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 4px;
+            border: 1px solid #666;
+            flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.5);
+            object-fit: cover;
+        }
+
+        .weapon-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
         }
 
         .weapon-name {
             color: #fff;
             font-weight: bold;
-            display: block;
             margin-bottom: 3px;
-            font-size: 0.85em;
+            font-size: 0.9em;
         }
 
         .weapon-stats-row {
-            display: flex;
-            justify-content: space-between;
             color: #f7931e;
-            font-size: 0.75em;
+            font-size: 0.8em;
         }
 
         .additional-stats-section {
@@ -673,14 +689,13 @@
 
             const teamStatsHTML = Object.keys(allStats)
                 .filter(key => ['kills', 'deaths', 'assists', 'score', 'precisionKills', 
-                               'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper'].includes(key))
+                               'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper'].includes(key))
                 .map(statKey => {
                     const stat = allStats[statKey];
                     const total = stat.total;
                     const avg = stat.count > 0 ? (stat.total / stat.count).toFixed(1) : '0';
                     
                     let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                    if (statKey === 'weaponKillsAbility') label = 'Ability Kills';
                     if (statKey === 'weaponKillsGrenade') label = 'Grenade Kills';
                     if (statKey === 'weaponKillsMelee') label = 'Melee Kills';
                     if (statKey === 'weaponKillsSuper') label = 'Super Kills';
@@ -761,7 +776,6 @@
                     { key: 'assists', label: 'Assists' },
                     { key: 'score', label: 'Score' },
                     { key: 'precisionKills', label: 'Precision' },
-                    { key: 'weaponKillsAbility', label: 'Ability' },
                     { key: 'weaponKillsGrenade', label: 'Grenade' },
                     { key: 'weaponKillsMelee', label: 'Melee' },
                     { key: 'weaponKillsSuper', label: 'Super' }
@@ -785,16 +799,19 @@
                         const kills = weapon.values.uniqueWeaponKills ? weapon.values.uniqueWeaponKills.basic.value : 0;
                         const precisionKills = weapon.values.uniqueWeaponPrecisionKills ? weapon.values.uniqueWeaponPrecisionKills.basic.value : 0;
                         
-                        // Get weapon name
+                        // Get weapon name and icon
                         const weaponDef = await getWeaponDefinition(weapon.referenceId);
                         const weaponName = weaponDef ? weaponDef.displayProperties.name : `Weapon ${weapon.referenceId}`;
+                        const weaponIcon = weaponDef && weaponDef.displayProperties.icon ? 
+                            `https://www.bungie.net${weaponDef.displayProperties.icon}` : 
+                            '';
                         
                         return `
                             <div class="weapon-item">
-                                <span class="weapon-name">${weaponName}</span>
-                                <div class="weapon-stats-row">
-                                    <span>${kills} kills</span>
-                                    <span>${precisionKills} precision</span>
+                                ${weaponIcon ? `<img src="${weaponIcon}" alt="${weaponName}" class="weapon-icon" />` : '<div class="weapon-icon"></div>'}
+                                <div class="weapon-info">
+                                    <span class="weapon-name">${weaponName}</span>
+                                    <div class="weapon-stats-row">Kills: ${kills} Precision: ${precisionKills}</div>
                                 </div>
                             </div>
                         `;
@@ -817,7 +834,7 @@
 
                 // Additional stats for interactive section - all other stats
                 const excludedStats = new Set(['kills', 'deaths', 'assists', 'score', 'precisionKills', 
-                                             'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
+                                             'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
                                              'activityDurationSeconds', 'completionReason', 'startSeconds']);
                 
                 const additionalStatsData = Object.keys(allStats)
