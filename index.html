@@ -19,11 +19,11 @@
         }
 
         .container {
-            max-width: 1600px;
+            max-width: 1800px;
             margin: 0 auto;
             padding: 20px;
             display: grid;
-            grid-template-columns: 250px 1fr 250px;
+            grid-template-columns: 280px 1fr 280px;
             gap: 20px;
         }
 
@@ -150,6 +150,16 @@
             align-items: center;
         }
 
+        .ranking-item.inactive {
+            opacity: 0.5;
+            background: rgba(0, 0, 0, 0.2);
+            border-color: #555;
+        }
+
+        .ranking-item.inactive .ranking-name {
+            color: #888;
+        }
+
         .ranking-position {
             color: #f7931e;
             font-weight: bold;
@@ -166,6 +176,14 @@
             color: #aaa;
             font-size: 0.8em;
             font-weight: bold;
+        }
+
+        .no-data-message {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            font-size: 0.8em;
+            margin-top: 10px;
         }
 
         .main-content {
@@ -546,8 +564,79 @@
         let cachedData = {
             activities: [],
             lastUpdated: 0,
-            memberStats: new Map()
+            memberStats: new Map(),
+            clanMembers: []
         };
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            initializePage();
+        });
+
+        async function initializePage() {
+            // Try to load cached data first
+            if (loadCache() && cachedData.activities.length > 0) {
+                console.log('Loading from cache...');
+                cleanOldActivities();
+                
+                // Restore cached clan data
+                if (cachedData.clanMembers && cachedData.clanMembers.length > 0) {
+                    clanMembers = cachedData.clanMembers;
+                    clanMemberIds = new Set(clanMembers.map(member => member.destinyUserInfo.membershipId));
+                    populateMemberSelect();
+                }
+                
+                allActivities = cachedData.activities;
+                filteredActivities = [...allActivities];
+                displayedActivities = [];
+                currentPage = 0;
+                
+                updateDataStatus(`Cached data: ${allActivities.length} activities`);
+                showContent();
+                updateStatsBar();
+                updateRankings();
+                loadMoreActivities();
+                
+                document.getElementById('loadDataBtn').textContent = 'Refresh Data';
+            } else {
+                // No cached data, try to get clan members for search dropdown
+                try {
+                    await loadClanMembersOnly();
+                } catch (error) {
+                    console.log('Could not pre-load clan members:', error.message);
+                }
+            }
+        }
+
+        async function loadClanMembersOnly() {
+            try {
+                updateDataStatus('Loading clan members...');
+                
+                if (!clanData) {
+                    clanData = await getClanByName();
+                    if (!clanData || !clanData.detail) {
+                        throw new Error('Clan not found');
+                    }
+                }
+
+                clanMembers = await getClanMembers(clanData.detail.groupId);
+                if (clanMembers.length === 0) {
+                    throw new Error('No clan members found');
+                }
+
+                clanMemberIds = new Set(clanMembers.map(member => member.destinyUserInfo.membershipId));
+                populateMemberSelect();
+                
+                // Cache clan members
+                cachedData.clanMembers = clanMembers;
+                saveCache();
+                
+                updateDataStatus('Clan members loaded - Click "Load Last 24 Hours" for activities');
+            } catch (error) {
+                console.error('Failed to load clan members:', error);
+                updateDataStatus('Click "Load Last 24 Hours" to begin');
+            }
+        }
 
         // Cache management
         function getCacheKey() {
@@ -556,7 +645,11 @@
 
         function saveCache() {
             try {
-                localStorage.setItem(getCacheKey(), JSON.stringify(cachedData));
+                const cacheData = {
+                    ...cachedData,
+                    memberStats: Array.from(cachedData.memberStats.entries())
+                };
+                localStorage.setItem(getCacheKey(), JSON.stringify(cacheData));
             } catch (error) {
                 console.warn('Failed to save cache:', error);
             }
@@ -566,7 +659,11 @@
             try {
                 const cached = localStorage.getItem(getCacheKey());
                 if (cached) {
-                    cachedData = JSON.parse(cached);
+                    const parsedCache = JSON.parse(cached);
+                    cachedData = {
+                        ...parsedCache,
+                        memberStats: new Map(parsedCache.memberStats || [])
+                    };
                     return true;
                 }
             } catch (error) {
@@ -661,6 +758,17 @@
             }
         }
 
+        async function getPGCR(instanceId) {
+            try {
+                const endpoint = `/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`;
+                const response = await makeAPIRequest(endpoint);
+                return response;
+            } catch (error) {
+                console.warn(`Failed to get PGCR for ${instanceId}:`, error);
+                return null;
+            }
+        }
+
         function isValidActivity(activity) {
             // Filter out strikes, patrols, story missions
             return !CONFIG.FILTERED_MODES.includes(activity.activityDetails.mode);
@@ -731,8 +839,8 @@
             const activityPromises = [];
             const memberStats = new Map();
 
+            // Initialize stats for ALL clan members
             for (const member of clanMembers) {
-                const membershipType = member.destinyUserInfo.membershipType;
                 const membershipId = member.destinyUserInfo.membershipId;
                 const displayName = member.destinyUserInfo.displayName;
                 
@@ -740,8 +848,15 @@
                     displayName: displayName,
                     totalTimePlayed: 0,
                     totalKills: 0,
-                    activities: []
+                    activities: [],
+                    hasData: false
                 });
+            }
+
+            for (const member of clanMembers) {
+                const membershipType = member.destinyUserInfo.membershipType;
+                const membershipId = member.destinyUserInfo.membershipId;
+                const displayName = member.destinyUserInfo.displayName;
                 
                 try {
                     const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`;
@@ -762,6 +877,7 @@
                                                 if (activity.values) {
                                                     stats.totalTimePlayed += activity.values.activityDurationSeconds?.basic?.value || 0;
                                                     stats.totalKills += activity.values.kills?.basic?.value || 0;
+                                                    stats.hasData = true;
                                                 }
                                                 stats.activities.push(activity);
 
@@ -796,8 +912,19 @@
                 }
             });
 
+            // Get PGCR data for fireteam information
+            const activitiesWithPGCR = await Promise.all(
+                allRecentActivities.map(async (activity) => {
+                    const pgcr = await getPGCR(activity.activityDetails.instanceId);
+                    return {
+                        ...activity,
+                        pgcrData: pgcr
+                    };
+                })
+            );
+
             // Remove duplicates and sort
-            const uniqueActivities = allRecentActivities.reduce((acc, activity) => {
+            const uniqueActivities = activitiesWithPGCR.reduce((acc, activity) => {
                 const key = activity.activityDetails.instanceId;
                 if (!acc.has(key)) {
                     acc.set(key, activity);
@@ -811,6 +938,7 @@
             // Update cache
             cachedData.activities = sortedActivities;
             cachedData.memberStats = memberStats;
+            cachedData.clanMembers = clanMembers;
             cachedData.lastUpdated = Date.now();
             saveCache();
             
@@ -888,37 +1016,51 @@
                 return;
             }
 
-            // Time played rankings
-            const timeRanked = Array.from(cachedData.memberStats.values())
-                .filter(stats => stats.totalTimePlayed > 0)
+            // Time played rankings - include ALL members
+            const allMembers = Array.from(cachedData.memberStats.values());
+            const timeRanked = allMembers
                 .sort((a, b) => b.totalTimePlayed - a.totalTimePlayed)
-                .slice(0, 10);
+                .slice(0, 15);
 
             timeRankings.innerHTML = timeRanked.map((stats, index) => {
                 const hours = Math.floor(stats.totalTimePlayed / 3600);
                 const minutes = Math.floor((stats.totalTimePlayed % 3600) / 60);
+                const timeText = stats.hasData ? `${hours}h ${minutes}m` : 'No data (24h)';
+                const isActive = stats.hasData;
+                
                 return `
-                    <div class="ranking-item">
+                    <div class="ranking-item ${!isActive ? 'inactive' : ''}">
                         <div class="ranking-position">${index + 1}</div>
                         <div class="ranking-name">${stats.displayName}</div>
-                        <div class="ranking-value">${hours}h ${minutes}m</div>
+                        <div class="ranking-value">${timeText}</div>
                     </div>
                 `;
-            }).join('') || '<div style="text-align: center; color: #888; padding: 20px;">No time data</div>';
+            }).join('');
 
-            // Kills rankings
-            const killsRanked = Array.from(cachedData.memberStats.values())
-                .filter(stats => stats.totalKills > 0)
+            // Kills rankings - include ALL members
+            const killsRanked = allMembers
                 .sort((a, b) => b.totalKills - a.totalKills)
-                .slice(0, 10);
+                .slice(0, 15);
 
-            killsRankings.innerHTML = killsRanked.map((stats, index) => `
-                <div class="ranking-item">
-                    <div class="ranking-position">${index + 1}</div>
-                    <div class="ranking-name">${stats.displayName}</div>
-                    <div class="ranking-value">${stats.totalKills}</div>
-                </div>
-            `).join('') || '<div style="text-align: center; color: #888; padding: 20px;">No kills data</div>';
+            killsRankings.innerHTML = killsRanked.map((stats, index) => {
+                const killsText = stats.hasData ? stats.totalKills.toString() : 'No data (24h)';
+                const isActive = stats.hasData;
+                
+                return `
+                    <div class="ranking-item ${!isActive ? 'inactive' : ''}">
+                        <div class="ranking-position">${index + 1}</div>
+                        <div class="ranking-name">${stats.displayName}</div>
+                        <div class="ranking-value">${killsText}</div>
+                    </div>
+                `;
+            }).join('');
+
+            // Add no data message if needed
+            if (allMembers.filter(m => m.hasData).length === 0) {
+                const noDataMsg = '<div class="no-data-message">Players with no activity data in last 24 hours have been greyed out.</div>';
+                timeRankings.innerHTML += noDataMsg;
+                killsRankings.innerHTML += noDataMsg;
+            }
         }
 
         function updateActivityControls() {
@@ -965,6 +1107,25 @@
                 
                 const statsSource = activity.values;
                 const isComplete = statsSource?.completionReason?.basic?.value === 0;
+                
+                // Build fireteam section with PGCR data
+                let fireteamHTML = '';
+                if (activity.pgcrData && activity.pgcrData.entries) {
+                    const fireteamMembers = activity.pgcrData.entries.map(entry => {
+                        const playerName = entry.player.destinyUserInfo.displayName;
+                        const isClanMember = clanMemberIds.has(entry.player.destinyUserInfo.membershipId);
+                        return `<span class="member-tag ${isClanMember ? 'clan-member' : ''}">${playerName}</span>`;
+                    });
+                    
+                    fireteamHTML = `
+                        <div class="fireteam">
+                            <div class="fireteam-title">Fireteam (${activity.pgcrData.entries.length})</div>
+                            <div class="fireteam-members">
+                                ${fireteamMembers.join('')}
+                            </div>
+                        </div>
+                    `;
+                }
                 
                 return `
                     <div class="activity-item" onclick="openActivityDetails('${activity.activityDetails.instanceId}')">
@@ -1018,6 +1179,8 @@
                             ` : ''}
                         </div>
                         ` : ''}
+                        
+                        ${fireteamHTML}
                     </div>
                 `;
             }).join('');
@@ -1076,12 +1239,6 @@
                 loadCache();
                 cleanOldActivities();
                 
-                // Get newest activity date from cache
-                let newestCachedDate = 0;
-                if (cachedData.activities.length > 0) {
-                    newestCachedDate = Math.max(...cachedData.activities.map(a => new Date(a.period).getTime()));
-                }
-
                 // Collect new activities
                 allActivities = await collectRecentActivities();
                 filteredActivities = [...allActivities];
@@ -1108,25 +1265,6 @@
                 loadBtn.textContent = 'Refresh Data';
             }
         }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            // Load cached data on page load if available
-            if (loadCache() && cachedData.activities.length > 0) {
-                cleanOldActivities();
-                allActivities = cachedData.activities;
-                filteredActivities = [...allActivities];
-                displayedActivities = [];
-                currentPage = 0;
-                
-                updateDataStatus(`Cached data: ${allActivities.length} activities`);
-                showContent();
-                updateStatsBar();
-                updateRankings();
-                loadMoreActivities();
-                
-                document.getElementById('loadDataBtn').textContent = 'Refresh Data';
-            }
-        });
     </script>
 </body>
 </html>
