@@ -11,6 +11,46 @@
             box-sizing: border-box;
         }
 
+        // Additional stats interaction functions
+        let expandedStates = {};
+        
+        function toggleAdditionalStats(playerIndex) {
+            const title = document.getElementById(`additional-stats-title-${playerIndex}`);
+            const grid = document.getElementById(`additional-stats-grid-${playerIndex}`);
+            const tooltip = document.getElementById(`additional-stats-tooltip-${playerIndex}`);
+            
+            const isExpanded = expandedStates[playerIndex] || false;
+            expandedStates[playerIndex] = !isExpanded;
+            
+            if (expandedStates[playerIndex]) {
+                // Expand - show grid, hide tooltip, disable hover
+                grid.classList.add('expanded');
+                title.classList.add('expanded');
+                tooltip.classList.remove('visible');
+                title.setAttribute('data-hover-disabled', 'true');
+            } else {
+                // Collapse - hide grid, enable hover
+                grid.classList.remove('expanded');
+                title.classList.remove('expanded');
+                title.removeAttribute('data-hover-disabled');
+            }
+        }
+        
+        function showAdditionalStatsTooltip(playerIndex) {
+            const title = document.getElementById(`additional-stats-title-${playerIndex}`);
+            const tooltip = document.getElementById(`additional-stats-tooltip-${playerIndex}`);
+            
+            // Only show tooltip if not expanded (hover disabled)
+            if (!title.hasAttribute('data-hover-disabled')) {
+                tooltip.classList.add('visible');
+            }
+        }
+        
+        function hideAdditionalStatsTooltip(playerIndex) {
+            const tooltip = document.getElementById(`additional-stats-tooltip-${playerIndex}`);
+            tooltip.classList.remove('visible');
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #1a1a2e, #16213e);
@@ -654,7 +694,7 @@
             container.className = 'player-rows-container';
 
             // Create player cards directly in the grid container
-            const playerCards = await Promise.all(players.map(async (entry) => {
+            const playerCards = await Promise.all(players.map(async (entry, playerIndex) => {
                 const player = entry.player;
                 const stats = entry.values || {};
                 const extendedStats = entry.extended?.values || {};
@@ -689,25 +729,7 @@
                     `;
                 }).join('');
 
-                // Additional stats for remaining section - all other stats
-                const excludedStats = new Set(['kills', 'deaths', 'assists', 'score', 'precisionKills', 
-                                             'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
-                                             'activityDurationSeconds', 'completionReason', 'startSeconds']);
-                const additionalStats = Object.keys(allStats)
-                    .filter(key => !excludedStats.has(key) && allStats[key] && allStats[key].basic)
-                    .map(statKey => {
-                        const value = allStats[statKey].basic.value;
-                        let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
-                        
-                        return `
-                            <div class="additional-stat-item">
-                                <span>${label}</span>
-                                <span>${typeof value === 'number' ? value.toLocaleString() : value}</span>
-                            </div>
-                        `;
-                    }).join('');
-
-                // Weapons section
+                // Weapons section (moved above additional stats)
                 let weaponsHTML = '';
                 if (entry.extended && entry.extended.weapons && entry.extended.weapons.length > 0) {
                     const weaponStats = await Promise.all(entry.extended.weapons.map(async (weapon) => {
@@ -744,6 +766,55 @@
                     `;
                 }
 
+                // Additional stats for interactive section - all other stats
+                const excludedStats = new Set(['kills', 'deaths', 'assists', 'score', 'precisionKills', 
+                                             'weaponKillsAbility', 'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
+                                             'activityDurationSeconds', 'completionReason', 'startSeconds']);
+                
+                const additionalStatsData = Object.keys(allStats)
+                    .filter(key => !excludedStats.has(key) && allStats[key] && allStats[key].basic)
+                    .map(statKey => {
+                        const value = allStats[statKey].basic.value;
+                        let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        
+                        return {
+                            label: label,
+                            value: typeof value === 'number' ? value.toLocaleString() : value
+                        };
+                    });
+
+                const additionalStatsHTML = additionalStatsData.map(stat => `
+                    <div class="additional-stat-item">
+                        <span>${stat.label}</span>
+                        <span>${stat.value}</span>
+                    </div>
+                `).join('');
+
+                const tooltipStatsHTML = additionalStatsData.map(stat => `
+                    <div class="tooltip-stat-item">
+                        <span>${stat.label}</span>
+                        <span>${stat.value}</span>
+                    </div>
+                `).join('');
+
+                const additionalStatsSection = additionalStatsData.length > 0 ? `
+                    <div class="additional-stats-section">
+                        <div class="additional-stats-title" 
+                             id="additional-stats-title-${playerIndex}"
+                             onclick="toggleAdditionalStats(${playerIndex})"
+                             onmouseenter="showAdditionalStatsTooltip(${playerIndex})"
+                             onmouseleave="hideAdditionalStatsTooltip(${playerIndex})">
+                            Additional Stats (${additionalStatsData.length})
+                        </div>
+                        <div class="additional-stats-grid" id="additional-stats-grid-${playerIndex}">
+                            ${additionalStatsHTML}
+                        </div>
+                        <div class="additional-stats-tooltip" id="additional-stats-tooltip-${playerIndex}">
+                            ${tooltipStatsHTML}
+                        </div>
+                    </div>
+                ` : '';
+
                 return `
                     <div class="player-card">
                         <div class="player-header">
@@ -756,16 +827,8 @@
                         </div>
 
                         <div class="additional-sections">
-                            ${additionalStats ? `
-                            <div class="additional-stats-section">
-                                <div class="additional-stats-title">Additional Stats (${Object.keys(allStats).filter(key => !excludedStats.has(key) && allStats[key] && allStats[key].basic).length})</div>
-                                <div class="additional-stats-grid">
-                                    ${additionalStats}
-                                </div>
-                            </div>
-                            ` : ''}
-                            
                             ${weaponsHTML}
+                            ${additionalStatsSection}
                         </div>
                     </div>
                 `;
