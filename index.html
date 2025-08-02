@@ -720,9 +720,49 @@
                 56: 'PvP Quickplay', 57: 'Clash Quickplay', 58: 'Clash Competitive', 59: 'Control Quickplay',
                 60: 'Control Competitive', 61: 'Gambit Prime', 62: 'Reckoning', 63: 'Menagerie',
                 64: 'VexOffensive', 65: 'NightmareHunt', 66: 'Elimination', 67: 'Momentum',
-                68: 'Dungeon', 69: 'Sundial', 70: 'TrialsOfOsiris'
+                68: 'Dungeon', 69: 'Sundial', 70: 'TrialsOfOsiris', 71: 'Dares', 72: 'Offensive',
+                73: 'LostSector', 74: 'Rift', 75: 'ZoneControl', 76: 'IronBannerRift', 77: 'IronBannerZoneControl',
+                78: 'Crucible', 79: 'Checkmate', 80: 'IronBannerCheckmate', 81: 'Exotic', 82: 'Battleground',
+                83: 'PsiOps', 84: 'WellspringAttack', 85: 'WellspringDefend', 86: 'PsiOpsBattleground'
             };
             return modes[mode] || `Mode ${mode}`;
+        }
+
+        function getImprovedActivityType(activityDefinition, mode, activityHash) {
+            // If we have activity definition, use it to determine a better type
+            if (activityDefinition) {
+                const name = activityDefinition.displayProperties.name.toLowerCase();
+                const description = activityDefinition.displayProperties.description?.toLowerCase() || '';
+                
+                // Check for specific activity types based on name/description
+                if (name.includes('kell\'s fall') || name.includes('exotic')) {
+                    return 'Exotic Mission';
+                }
+                if (name.includes('deep stone crypt') || name.includes('vault of glass') || name.includes('raid')) {
+                    return 'Raid';
+                }
+                if (name.includes('dungeon') || name.includes('shattered throne') || name.includes('pit of heresy') || name.includes('prophecy')) {
+                    return 'Dungeon';
+                }
+                if (name.includes('nightfall') || description.includes('nightfall')) {
+                    return 'Nightfall';
+                }
+                if (name.includes('battleground') || description.includes('battleground')) {
+                    return 'Battleground';
+                }
+                if (name.includes('wellspring') || description.includes('wellspring')) {
+                    return 'Wellspring';
+                }
+                if (name.includes('dares') || name.includes('eternity')) {
+                    return 'Dares of Eternity';
+                }
+                if (name.includes('legendary') || name.includes('master')) {
+                    return `${getActivityModeString(mode)} (${name.includes('master') ? 'Master' : 'Legendary'})`;
+                }
+            }
+            
+            // Fall back to mode string
+            return getActivityModeString(mode);
         }
 
         function isWithinLast24Hours(dateString) {
@@ -858,7 +898,10 @@
                 const definition = activityHash ? activityDefinitionCache.get(activityHash) : null;
                 const activityName = definition?.displayProperties?.name || getActivityModeString(activity.activityDetails.mode);
                 
-                return { activity, pgcr, hasPrivateAccess, activityName };
+                // Get improved activity type
+                const activityType = getImprovedActivityType(definition, activity.activityDetails.mode, activityHash);
+                
+                return { activity, pgcr, hasPrivateAccess, activityName, activityType };
             });
 
             const activityDetails = await Promise.allSettled(activityDetailsPromises);
@@ -866,7 +909,7 @@
             const activityHTML = activityDetails.map((result, index) => {
                 if (result.status === 'rejected') return '';
                 
-                const { activity, pgcr, hasPrivateAccess, activityName } = result.value;
+                const { activity, pgcr, hasPrivateAccess, activityName, activityType } = result.value;
                 
                 // Use PGCR data if available, otherwise fall back to activity data
                 let statsSource = null;
@@ -920,7 +963,7 @@
                                     ${activityName}
                                 </div>
                                 <div class="activity-mode">
-                                    ${getActivityModeString(activity.activityDetails.mode)}
+                                    ${activityType}
                                 </div>
                                 <div class="activity-time">
                                     ${formatDate(activity.period)}
