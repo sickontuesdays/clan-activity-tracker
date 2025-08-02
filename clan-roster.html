@@ -13,45 +13,70 @@
 
         // Debug Functions for Random Clan Member Data
         async function debugRandomClanMember() {
+            console.log('Starting debugRandomClanMember...');
             document.getElementById('debugLoading').style.display = 'block';
             document.getElementById('debugResults').style.display = 'none';
             document.getElementById('debugError').style.display = 'none';
 
             try {
                 // Step 1: Get clan members
+                console.log('Step 1: Getting clan members...');
                 document.getElementById('clanMemberResults').textContent = 'Getting clan members...';
                 
                 if (!clanData) {
+                    console.log('Clan data not cached, fetching...');
+                    document.getElementById('debugLoading').textContent = 'Getting clan information...';
+                    
                     clanData = await getClanByName();
+                    console.log('Clan data received:', clanData);
+                    
                     if (!clanData || !clanData.detail) {
                         throw new Error('Clan not found');
                     }
                 }
 
+                console.log('Getting clan members with groupId:', clanData.detail.groupId);
+                document.getElementById('debugLoading').textContent = 'Getting clan member list...';
+                
                 const clanMembersEndpoint = `/GroupV2/${clanData.detail.groupId}/Members/`;
                 clanMembers = await getClanMembers(clanData.detail.groupId);
+                console.log('Clan members received:', clanMembers.length);
                 
-                document.getElementById('clanMemberResults').innerHTML = `<strong>API Call:</strong> GET ${clanMembersEndpoint}<br><br><strong>Clan Members Found:</strong> ${clanMembers.length}<br><br><strong>Sample Response:</strong><br><pre>${JSON.stringify(clanMembers.slice(0, 3), null, 2)}</pre>`;
+                document.getElementById('clanMemberResults').innerHTML = `<strong>API Call:</strong> GET ${clanMembersEndpoint}<br><br><strong>Clan Members Found:</strong> ${clanMembers.length}<br><br><strong>Sample Response:</strong><br><pre>${JSON.stringify(clanMembers.slice(0, 2), null, 2)}</pre>`;
 
                 if (!clanMembers || clanMembers.length === 0) {
                     throw new Error('No clan members found');
                 }
 
                 // Pick a random member
-                const randomMember = clanMembers[Math.floor(Math.random() * clanMembers.length)];
+                const randomIndex = Math.floor(Math.random() * clanMembers.length);
+                const randomMember = clanMembers[randomIndex];
                 const membershipType = randomMember.destinyUserInfo.membershipType;
                 const membershipId = randomMember.destinyUserInfo.membershipId;
+                
+                console.log(`Selected random member ${randomIndex}:`, randomMember.destinyUserInfo.displayName);
 
                 // Step 2: Get Profile Data
+                console.log('Step 2: Getting profile data...');
+                document.getElementById('debugLoading').textContent = `Getting profile data for ${randomMember.destinyUserInfo.displayName}...`;
                 document.getElementById('profileResults').textContent = 'Getting profile data...';
                 
                 const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=Profiles,Characters,CharacterProgressions,PresentationNodes,Records,CharacterActivities,Collectibles`;
-                document.getElementById('profileResults').innerHTML = `<strong>Random Member:</strong> ${randomMember.destinyUserInfo.displayName}<br><strong>API Call:</strong> GET ${profileEndpoint}<br><br><strong>Response:</strong><br>`;
+                document.getElementById('profileResults').innerHTML = `<strong>Random Member:</strong> ${randomMember.destinyUserInfo.displayName}<br><strong>API Call:</strong> GET ${profileEndpoint}<br><br><strong>Loading response...</strong>`;
                 
-                const profileData = await makeAPIRequest(profileEndpoint);
-                document.getElementById('profileResults').innerHTML += `<pre>${JSON.stringify(profileData, null, 2)}</pre>`;
+                console.log('Making profile API call...');
+                const profileData = await getPlayerProfile(membershipType, membershipId);
+                console.log('Profile data received:', profileData);
+                
+                if (!profileData) {
+                    throw new Error(`Profile data unavailable for ${randomMember.destinyUserInfo.displayName} (likely private)`);
+                }
+                
+                document.getElementById('profileResults').innerHTML += `<br><br><strong>Response:</strong><br><pre>${JSON.stringify(profileData, null, 2)}</pre>`;
 
                 // Step 3: Parse Character Data
+                console.log('Step 3: Parsing character data...');
+                document.getElementById('debugLoading').textContent = 'Parsing character data...';
                 document.getElementById('parsedResults').textContent = 'Parsing character data...';
                 
                 const parsedData = {
@@ -102,6 +127,8 @@
                 document.getElementById('parsedResults').innerHTML = `<pre>${JSON.stringify(parsedData, null, 2)}</pre>`;
 
                 // Step 4: Get Title/Manifest Data
+                console.log('Step 4: Getting title manifest data...');
+                document.getElementById('debugLoading').textContent = 'Getting title manifest data...';
                 document.getElementById('titleResults').textContent = 'Getting title manifest data...';
                 
                 let titleData = {
@@ -118,6 +145,7 @@
                     for (let i = 0; i < Math.min(3, parsedData.completedTitlesHashes.length); i++) {
                         const hash = parsedData.completedTitlesHashes[i];
                         try {
+                            console.log(`Getting record definition for hash: ${hash}`);
                             const recordEndpoint = `/Destiny2/Manifest/DestinyRecordDefinition/${hash}/`;
                             const recordDef = await makeAPIRequest(recordEndpoint);
                             titleData.titleDefinitions[hash] = {
@@ -125,6 +153,7 @@
                                 definition: recordDef
                             };
                         } catch (error) {
+                            console.warn(`Failed to get record definition for ${hash}:`, error);
                             titleData.titleDefinitions[hash] = {
                                 error: error.message
                             };
@@ -134,11 +163,12 @@
 
                 document.getElementById('titleResults').innerHTML = `<pre>${JSON.stringify(titleData, null, 2)}</pre>`;
 
+                console.log('Debug completed successfully');
                 document.getElementById('debugLoading').style.display = 'none';
                 document.getElementById('debugResults').style.display = 'block';
 
             } catch (error) {
-                console.error('Debug failed:', error);
+                console.error('Debug failed with error:', error);
                 showDebugError(`Debug failed: ${error.message}`);
                 document.getElementById('debugLoading').style.display = 'none';
             }
