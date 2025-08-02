@@ -19,19 +19,22 @@
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1600px;
             margin: 0 auto;
             padding: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr 250px;
+            gap: 20px;
         }
 
         .header {
+            grid-column: 1 / -1;
             text-align: center;
             margin-bottom: 30px;
             padding: 20px;
             background: rgba(0, 0, 0, 0.3);
             border-radius: 10px;
             border: 1px solid #333;
-            position: relative;
         }
 
         .header h1 {
@@ -46,99 +49,130 @@
             font-size: 1.1em;
         }
 
-        .user-controls {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .login-btn, .logout-btn {
-            background: rgba(247, 147, 30, 0.2);
-            border: 1px solid #f7931e;
-            color: #f7931e;
-            padding: 8px 16px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-size: 0.9em;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .login-btn:hover, .logout-btn:hover {
-            background: rgba(247, 147, 30, 0.3);
-            transform: translateY(-1px);
-        }
-
-        .user-info {
-            color: #aaa;
-            font-size: 0.9em;
-        }
-
-        .access-level {
+        .controls-section {
+            grid-column: 1 / -1;
             background: rgba(0, 0, 0, 0.4);
-            border-radius: 8px;
-            padding: 15px;
-            margin-bottom: 25px;
-            border-left: 4px solid #f7931e;
-        }
-
-        .access-level.public {
-            border-left-color: #888;
-        }
-
-        .access-level.private {
-            border-left-color: #00ff00;
-        }
-
-        .access-title {
-            font-weight: bold;
-            margin-bottom: 5px;
-        }
-
-        .access-description {
-            font-size: 0.9em;
-            color: #aaa;
-        }
-
-        .upgrade-prompt {
-            background: linear-gradient(45deg, rgba(247, 147, 30, 0.1), rgba(0, 255, 0, 0.1));
-            border: 1px solid #f7931e;
             border-radius: 10px;
             padding: 20px;
             margin-bottom: 25px;
-            text-align: center;
+            border: 1px solid #444;
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: wrap;
         }
 
-        .upgrade-title {
-            color: #f7931e;
-            font-size: 1.3em;
-            margin-bottom: 10px;
-        }
-
-        .upgrade-description {
-            color: #ccc;
-            margin-bottom: 15px;
-        }
-
-        .upgrade-btn {
-            background: linear-gradient(45deg, #f7931e, #00ff00);
+        .load-data-btn {
+            background: linear-gradient(45deg, #f7931e, #e6840e);
             border: none;
             color: white;
             padding: 12px 24px;
             border-radius: 8px;
             font-size: 1em;
             font-weight: bold;
-            text-decoration: none;
-            display: inline-block;
+            cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        .upgrade-btn:hover {
+        .load-data-btn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(247, 147, 30, 0.4);
+            box-shadow: 0 6px 20px rgba(247, 147, 30, 0.4);
+        }
+
+        .load-data-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .search-container {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .search-label {
+            color: #f7931e;
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .search-select {
+            width: 100%;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #666;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 1em;
+        }
+
+        .search-select option {
+            background: #1a1a2e;
+            color: #fff;
+        }
+
+        .data-status {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .sidebar {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        .sidebar-title {
+            color: #f7931e;
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .ranking-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .ranking-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #333;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .ranking-position {
+            color: #f7931e;
+            font-weight: bold;
+            min-width: 25px;
+        }
+
+        .ranking-name {
+            flex: 1;
+            margin: 0 10px;
+            font-size: 0.9em;
+        }
+
+        .ranking-value {
+            color: #aaa;
+            font-size: 0.8em;
+            font-weight: bold;
+        }
+
+        .main-content {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
         }
 
         .stats-bar {
@@ -154,19 +188,6 @@
             border-radius: 8px;
             padding: 15px;
             text-align: center;
-            position: relative;
-        }
-
-        .stat-card.limited {
-            opacity: 0.6;
-        }
-
-        .stat-card.limited::after {
-            content: "🔒";
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            font-size: 0.8em;
         }
 
         .stat-value {
@@ -247,32 +268,12 @@
             padding: 20px;
             cursor: pointer;
             transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
         }
 
         .activity-item:hover {
             border-color: #f7931e;
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(247, 147, 30, 0.3);
-        }
-
-        .activity-item.limited {
-            opacity: 0.7;
-            border-style: dashed;
-        }
-
-        .activity-item.limited::before {
-            content: "Limited Data - Login for Full Details";
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255, 255, 0, 0.2);
-            color: #ffff00;
-            padding: 2px 6px;
-            border-radius: 3px;
-            font-size: 0.7em;
-            border: 1px solid #ffff00;
         }
 
         .activity-header {
@@ -380,12 +381,6 @@
             color: #00ff00;
         }
 
-        .opted-in-member {
-            background: rgba(0, 255, 255, 0.2);
-            border-color: #00ffff;
-            color: #00ffff;
-        }
-
         .stats-preview {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
@@ -416,13 +411,24 @@
             margin-top: 2px;
         }
 
-        @media (max-width: 768px) {
-            .user-controls {
-                position: static;
-                justify-content: center;
-                margin-top: 15px;
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 1fr;
             }
             
+            .controls-section {
+                flex-direction: column;
+                gap: 15px;
+                align-items: stretch;
+            }
+            
+            .sidebar {
+                position: static;
+                margin-bottom: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
             .activity-controls {
                 flex-direction: column;
                 gap: 10px;
@@ -444,61 +450,78 @@
         <div class="header">
             <h1>S!ck on Tuesdays!</h1>
             <p>Clan Activity Tracker & Statistics</p>
+        </div>
+
+        <div class="controls-section">
+            <button id="loadDataBtn" class="load-data-btn" onclick="loadRecentActivities()">
+                Load Last 24 Hours
+            </button>
             
-            <div class="user-controls">
-                <div id="userInfo" class="user-info" style="display: none;"></div>
-                <a href="login.html" id="loginBtn" class="login-btn">Enhanced Access</a>
-                <button id="logoutBtn" class="logout-btn" style="display: none;" onclick="logout()">Logout</button>
+            <div class="search-container">
+                <label class="search-label">Search by Clan Member:</label>
+                <select id="memberSelect" class="search-select" onchange="filterByMember()">
+                    <option value="">All Members</option>
+                </select>
+            </div>
+            
+            <div class="data-status" id="dataStatus">
+                No data loaded
             </div>
         </div>
 
-        <div id="accessLevel" class="access-level public">
-            <div class="access-title">Public Access Mode</div>
-            <div class="access-description">You're viewing public clan data only. Login for enhanced features and private member data.</div>
-        </div>
-
-        <div id="upgradePrompt" class="upgrade-prompt">
-            <div class="upgrade-title">🔓 Unlock Enhanced Features</div>
-            <div class="upgrade-description">
-                Login to see detailed statistics from opted-in clan members and access comprehensive activity data.
-            </div>
-            <a href="login.html" class="upgrade-btn">Login with Bungie.net</a>
-        </div>
-
-        <div id="statsBar" class="stats-bar" style="display: none;">
-            <div class="stat-card" id="totalActivitiesCard">
-                <span class="stat-value" id="totalActivities">0</span>
-                <span class="stat-label">Activities (24h)</span>
-            </div>
-            <div class="stat-card" id="activePlayersCard">
-                <span class="stat-value" id="activePlayers">0</span>
-                <span class="stat-label">Active Players</span>
-            </div>
-            <div class="stat-card" id="totalKillsCard">
-                <span class="stat-value" id="totalKills">0</span>
-                <span class="stat-label">Total Kills</span>
-            </div>
-            <div class="stat-card" id="avgKDCard">
-                <span class="stat-value" id="avgKD">0.00</span>
-                <span class="stat-label">Average K/D</span>
+        <div class="sidebar">
+            <div class="sidebar-title">⏱️ Most Time Played</div>
+            <div class="ranking-list" id="timeRankings">
+                <div style="text-align: center; color: #888; padding: 20px;">
+                    Load data to see rankings
+                </div>
             </div>
         </div>
 
-        <div id="loading" class="loading">
-            Loading clan activities...
-        </div>
-
-        <div id="error" class="error" style="display: none;"></div>
-
-        <div id="activityControls" class="activity-controls" style="display: none;">
-            <div class="activity-count">
-                Showing <span id="shownCount">0</span> of <span id="totalCount">0</span> activities
-                <span id="dataLevel" style="color: #888;"></span>
+        <div class="main-content">
+            <div id="statsBar" class="stats-bar" style="display: none;">
+                <div class="stat-card">
+                    <span class="stat-value" id="totalActivities">0</span>
+                    <span class="stat-label">Activities (24h)</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="activePlayers">0</span>
+                    <span class="stat-label">Active Players</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="totalKills">0</span>
+                    <span class="stat-label">Total Kills</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value" id="avgKD">0.00</span>
+                    <span class="stat-label">Average K/D</span>
+                </div>
             </div>
-            <button id="loadMoreBtn" class="load-more-btn">Load More</button>
+
+            <div id="loading" class="loading" style="display: none;">
+                Loading clan activities...
+            </div>
+
+            <div id="error" class="error" style="display: none;"></div>
+
+            <div id="activityControls" class="activity-controls" style="display: none;">
+                <div class="activity-count">
+                    Showing <span id="shownCount">0</span> of <span id="totalCount">0</span> activities
+                </div>
+                <button id="loadMoreBtn" class="load-more-btn" onclick="loadMoreActivities()">Load More</button>
+            </div>
+
+            <div id="activities" class="activity-list" style="display: none;"></div>
         </div>
 
-        <div id="activities" class="activity-list" style="display: none;"></div>
+        <div class="sidebar">
+            <div class="sidebar-title">🎯 Most Kills</div>
+            <div class="ranking-list" id="killsRankings">
+                <div style="text-align: center; color: #888; padding: 20px;">
+                    Load data to see rankings
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -507,20 +530,57 @@
             CLAN_NAME: 'S!ck on Tuesdays!',
             GROUP_TYPE: 1,
             ACTIVITIES_PER_PAGE: 10,
-            HOURS_LOOKBACK: 24
+            HOURS_LOOKBACK: 24,
+            FILTERED_MODES: [2, 3, 6] // Story, Strike, Patrol - activities to exclude
         };
 
         // Global variables
-        let userSession = null;
         let clanData = null;
         let clanMembers = [];
         let clanMemberIds = new Set();
-        let optedInMembers = new Set();
         let allActivities = [];
+        let filteredActivities = [];
         let displayedActivities = [];
         let currentPage = 0;
-        let isLoggedIn = false;
         let activityDefinitionCache = new Map();
+        let cachedData = {
+            activities: [],
+            lastUpdated: 0,
+            memberStats: new Map()
+        };
+
+        // Cache management
+        function getCacheKey() {
+            return 'clan_activity_cache';
+        }
+
+        function saveCache() {
+            try {
+                localStorage.setItem(getCacheKey(), JSON.stringify(cachedData));
+            } catch (error) {
+                console.warn('Failed to save cache:', error);
+            }
+        }
+
+        function loadCache() {
+            try {
+                const cached = localStorage.getItem(getCacheKey());
+                if (cached) {
+                    cachedData = JSON.parse(cached);
+                    return true;
+                }
+            } catch (error) {
+                console.warn('Failed to load cache:', error);
+            }
+            return false;
+        }
+
+        function cleanOldActivities() {
+            const cutoffTime = Date.now() - (CONFIG.HOURS_LOOKBACK * 60 * 60 * 1000);
+            cachedData.activities = cachedData.activities.filter(activity => 
+                new Date(activity.period).getTime() >= cutoffTime
+            );
+        }
 
         // Utility functions
         function showError(message) {
@@ -539,114 +599,27 @@
             document.getElementById('activities').style.display = 'block';
         }
 
-        function updateAccessLevel() {
-            const accessLevel = document.getElementById('accessLevel');
-            const upgradePrompt = document.getElementById('upgradePrompt');
-            const loginBtn = document.getElementById('loginBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            const userInfo = document.getElementById('userInfo');
-
-            if (isLoggedIn && userSession) {
-                accessLevel.className = 'access-level private';
-                accessLevel.innerHTML = `
-                    <div class="access-title">Enhanced Access Mode</div>
-                    <div class="access-description">You have access to detailed data from ${optedInMembers.size} opted-in clan members.</div>
-                `;
-                upgradePrompt.style.display = 'none';
-                loginBtn.style.display = 'none';
-                logoutBtn.style.display = 'inline-block';
-                userInfo.style.display = 'block';
-                userInfo.textContent = `Welcome, ${userSession.displayName}`;
-            } else {
-                accessLevel.className = 'access-level public';
-                accessLevel.innerHTML = `
-                    <div class="access-title">Public Access Mode</div>
-                    <div class="access-description">You're viewing public clan data only. Login for enhanced features and private member data.</div>
-                `;
-                upgradePrompt.style.display = 'block';
-                loginBtn.style.display = 'inline-block';
-                logoutBtn.style.display = 'none';
-                userInfo.style.display = 'none';
-            }
+        function updateDataStatus(message) {
+            document.getElementById('dataStatus').textContent = message;
         }
 
-        async function checkUserSession() {
+        async function makeAPIRequest(endpoint) {
             try {
-                const response = await fetch('/api/check-session');
-                if (response.ok) {
-                    userSession = await response.json();
-                    isLoggedIn = true;
-                    
-                    // Auto-opt in current user
-                    await fetch('/api/opted-in-members', { method: 'POST' });
-                    
-                    // Get opted-in members list
-                    const optedInResponse = await fetch('/api/opted-in-members');
-                    if (optedInResponse.ok) {
-                        const optedInData = await optedInResponse.json();
-                        optedInMembers = new Set(optedInData.memberIds);
-                    }
-                }
-            } catch (error) {
-                console.log('No valid session found');
-                isLoggedIn = false;
-            }
-            
-            updateAccessLevel();
-        }
-
-        async function logout() {
-            try {
-                await fetch('/api/logout', { method: 'POST' });
-                userSession = null;
-                isLoggedIn = false;
-                optedInMembers.clear();
-                updateAccessLevel();
+                const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
                 
-                // Reload data with public access only
-                location.reload();
-            } catch (error) {
-                console.error('Logout failed:', error);
-            }
-        }
-
-        async function makeAPIRequest(endpoint, useAuth = false) {
-            try {
-                const headers = {};
-                
-                if (useAuth && isLoggedIn) {
-                    // Use authenticated endpoint for private data
-                    const response = await fetch(`/api/bungie-auth?endpoint=${encodeURIComponent(endpoint)}`);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    if (data.ErrorCode !== 1) {
-                        throw new Error(`API Error: ${data.Message}`);
-                    }
-                    return data.Response;
-                } else {
-                    // Use public endpoint
-                    const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
-                    
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
-                    
-                    const data = await response.json();
-                    if (data.error) {
-                        throw new Error(data.error);
-                    }
-                    if (data.ErrorCode !== 1) {
-                        throw new Error(`API Error: ${data.Message}`);
-                    }
-                    return data.Response;
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
                 }
+
+                const data = await response.json();
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+                if (data.ErrorCode !== 1) {
+                    throw new Error(`API Error: ${data.Message}`);
+                }
+                return data.Response;
             } catch (error) {
                 console.error('API Request failed:', error);
                 throw error;
@@ -676,10 +649,7 @@
         async function getActivityHistory(membershipType, membershipId, characterId, count = 50) {
             try {
                 const endpoint = `/Destiny2/${membershipType}/Account/${membershipId}/Character/${characterId}/Stats/Activities/?count=${count}&mode=0&page=0`;
-                
-                // Try authenticated request first if user is logged in and this member is opted-in
-                const useAuth = isLoggedIn && optedInMembers.has(membershipId);
-                const response = await makeAPIRequest(endpoint, useAuth);
+                const response = await makeAPIRequest(endpoint);
                 return response.activities || [];
             } catch (error) {
                 if (error.message.includes('private') || error.message.includes('No peeking')) {
@@ -689,6 +659,18 @@
                 console.error(`Failed to get activities for character ${characterId}:`, error);
                 return [];
             }
+        }
+
+        function isValidActivity(activity) {
+            // Filter out strikes, patrols, story missions
+            return !CONFIG.FILTERED_MODES.includes(activity.activityDetails.mode);
+        }
+
+        function isWithinLast24Hours(dateString) {
+            const activityDate = new Date(dateString);
+            const now = new Date();
+            const twentyFourHoursAgo = new Date(now - (CONFIG.HOURS_LOOKBACK * 60 * 60 * 1000));
+            return activityDate >= twentyFourHoursAgo;
         }
 
         function formatDate(dateString) {
@@ -709,9 +691,9 @@
 
         function getActivityModeString(mode) {
             const modes = {
-                0: 'All', 2: 'Story', 3: 'Strike', 4: 'Raid', 5: 'PvP', 6: 'Patrol', 7: 'PvE',
-                10: 'Control', 12: 'Clash', 15: 'Crimson Doubles', 16: 'Nightfall', 18: 'Iron Banner',
-                19: 'Trials', 25: 'Mayhem', 31: 'Supremacy', 32: 'Private Match', 37: 'Survival',
+                0: 'All', 4: 'Raid', 5: 'PvP', 7: 'PvE', 10: 'Control', 12: 'Clash', 
+                15: 'Crimson Doubles', 16: 'Nightfall', 18: 'Iron Banner', 19: 'Trials', 
+                25: 'Mayhem', 31: 'Supremacy', 32: 'Private Match', 37: 'Survival',
                 38: 'Countdown', 39: 'Trials of the Nine', 40: 'Social', 41: 'Trials Countdown',
                 42: 'Trials Survival', 43: 'Iron Banner Control', 44: 'Iron Banner Clash',
                 45: 'Iron Banner Supremacy', 46: 'Scored Nightfall', 47: 'Scored Heroic Nightfall',
@@ -726,61 +708,6 @@
                 83: 'PsiOps', 84: 'WellspringAttack', 85: 'WellspringDefend', 86: 'PsiOpsBattleground'
             };
             return modes[mode] || `Mode ${mode}`;
-        }
-
-        function getImprovedActivityType(activityDefinition, mode, activityHash) {
-            // If we have activity definition, use it to determine a better type
-            if (activityDefinition) {
-                const name = activityDefinition.displayProperties.name.toLowerCase();
-                const description = activityDefinition.displayProperties.description?.toLowerCase() || '';
-                
-                // Check for specific activity types based on name/description
-                if (name.includes('kell\'s fall') || name.includes('exotic')) {
-                    return 'Exotic Mission';
-                }
-                if (name.includes('deep stone crypt') || name.includes('vault of glass') || name.includes('raid')) {
-                    return 'Raid';
-                }
-                if (name.includes('dungeon') || name.includes('shattered throne') || name.includes('pit of heresy') || name.includes('prophecy')) {
-                    return 'Dungeon';
-                }
-                if (name.includes('nightfall') || description.includes('nightfall')) {
-                    return 'Nightfall';
-                }
-                if (name.includes('battleground') || description.includes('battleground')) {
-                    return 'Battleground';
-                }
-                if (name.includes('wellspring') || description.includes('wellspring')) {
-                    return 'Wellspring';
-                }
-                if (name.includes('dares') || name.includes('eternity')) {
-                    return 'Dares of Eternity';
-                }
-                if (name.includes('legendary') || name.includes('master')) {
-                    return `${getActivityModeString(mode)} (${name.includes('master') ? 'Master' : 'Legendary'})`;
-                }
-            }
-            
-            // Fall back to mode string
-            return getActivityModeString(mode);
-        }
-
-        function isWithinLast24Hours(dateString) {
-            const activityDate = new Date(dateString);
-            const now = new Date();
-            const twentyFourHoursAgo = new Date(now - (CONFIG.HOURS_LOOKBACK * 60 * 60 * 1000));
-            return activityDate >= twentyFourHoursAgo;
-        }
-
-        async function getActivityDetails(instanceId, hasPrivateAccess = false) {
-            try {
-                const endpoint = `/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`;
-                const response = await makeAPIRequest(endpoint, hasPrivateAccess);
-                return response;
-            } catch (error) {
-                console.error(`Failed to get activity details for ${instanceId}:`, error);
-                return null;
-            }
         }
 
         async function getActivityDefinition(activityHash) {
@@ -799,29 +726,147 @@
             }
         }
 
+        async function collectRecentActivities() {
+            const allRecentActivities = [];
+            const activityPromises = [];
+            const memberStats = new Map();
+
+            for (const member of clanMembers) {
+                const membershipType = member.destinyUserInfo.membershipType;
+                const membershipId = member.destinyUserInfo.membershipId;
+                const displayName = member.destinyUserInfo.displayName;
+                
+                memberStats.set(membershipId, {
+                    displayName: displayName,
+                    totalTimePlayed: 0,
+                    totalKills: 0,
+                    activities: []
+                });
+                
+                try {
+                    const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`;
+                    const profile = await makeAPIRequest(profileEndpoint);
+                    
+                    if (profile && profile.characters && profile.characters.data) {
+                        const characters = Object.keys(profile.characters.data);
+                        
+                        for (const characterId of characters.slice(0, 3)) {
+                            activityPromises.push(
+                                getActivityHistory(membershipType, membershipId, characterId, 25)
+                                    .then(activities => 
+                                        activities
+                                            .filter(activity => isWithinLast24Hours(activity.period) && isValidActivity(activity))
+                                            .map(activity => {
+                                                // Track member stats
+                                                const stats = memberStats.get(membershipId);
+                                                if (activity.values) {
+                                                    stats.totalTimePlayed += activity.values.activityDurationSeconds?.basic?.value || 0;
+                                                    stats.totalKills += activity.values.kills?.basic?.value || 0;
+                                                }
+                                                stats.activities.push(activity);
+
+                                                return {
+                                                    ...activity,
+                                                    memberInfo: {
+                                                        displayName: displayName,
+                                                        membershipType: membershipType,
+                                                        membershipId: membershipId,
+                                                        characterId: characterId
+                                                    }
+                                                };
+                                            })
+                                    )
+                            );
+                        }
+                    }
+                } catch (error) {
+                    if (error.message.includes('private') || error.message.includes('No peeking')) {
+                        console.log(`Profile is private for member ${displayName}, skipping...`);
+                    } else {
+                        console.error(`Error getting profile for member ${displayName}:`, error);
+                    }
+                }
+            }
+
+            const activityResults = await Promise.allSettled(activityPromises);
+            
+            activityResults.forEach(result => {
+                if (result.status === 'fulfilled' && result.value) {
+                    allRecentActivities.push(...result.value);
+                }
+            });
+
+            // Remove duplicates and sort
+            const uniqueActivities = allRecentActivities.reduce((acc, activity) => {
+                const key = activity.activityDetails.instanceId;
+                if (!acc.has(key)) {
+                    acc.set(key, activity);
+                }
+                return acc;
+            }, new Map());
+
+            const sortedActivities = Array.from(uniqueActivities.values())
+                .sort((a, b) => new Date(b.period) - new Date(a.period));
+            
+            // Update cache
+            cachedData.activities = sortedActivities;
+            cachedData.memberStats = memberStats;
+            cachedData.lastUpdated = Date.now();
+            saveCache();
+            
+            console.log(`Collected ${sortedActivities.length} activities from ${clanMembers.length} clan members`);
+            return sortedActivities;
+        }
+
+        function populateMemberSelect() {
+            const select = document.getElementById('memberSelect');
+            select.innerHTML = '<option value="">All Members</option>';
+            
+            const sortedMembers = [...clanMembers].sort((a, b) => 
+                a.destinyUserInfo.displayName.localeCompare(b.destinyUserInfo.displayName)
+            );
+            
+            sortedMembers.forEach(member => {
+                const option = document.createElement('option');
+                option.value = member.destinyUserInfo.membershipId;
+                option.textContent = member.destinyUserInfo.displayName;
+                select.appendChild(option);
+            });
+        }
+
+        function filterByMember() {
+            const select = document.getElementById('memberSelect');
+            const selectedMemberId = select.value;
+            
+            if (selectedMemberId) {
+                filteredActivities = allActivities.filter(activity => 
+                    activity.memberInfo.membershipId === selectedMemberId
+                );
+            } else {
+                filteredActivities = [...allActivities];
+            }
+            
+            // Reset pagination
+            displayedActivities = [];
+            currentPage = 0;
+            
+            updateStatsBar();
+            updateRankings();
+            loadMoreActivities();
+        }
+
         function updateStatsBar() {
-            const totalActivities = allActivities.length;
-            const activePlayers = new Set(allActivities.map(a => a.memberInfo.membershipId)).size;
+            const activities = filteredActivities;
+            const totalActivities = activities.length;
+            const activePlayers = new Set(activities.map(a => a.memberInfo.membershipId)).size;
             
             let totalKills = 0;
             let totalDeaths = 0;
-            let hasLimitedData = false;
             
-            allActivities.forEach(activity => {
-                let activityStats = null;
-                
-                // Look for stats in both locations
+            activities.forEach(activity => {
                 if (activity.values) {
-                    activityStats = activity.values;
-                } else if (activity.extended && activity.extended.values) {
-                    activityStats = activity.extended.values;
-                }
-                
-                if (activityStats) {
-                    totalKills += activityStats.kills ? activityStats.kills.basic.value : 0;
-                    totalDeaths += activityStats.deaths ? activityStats.deaths.basic.value : 0;
-                } else {
-                    hasLimitedData = true;
+                    totalKills += activity.values.kills?.basic?.value || 0;
+                    totalDeaths += activity.values.deaths?.basic?.value || 0;
                 }
             });
 
@@ -831,32 +876,57 @@
             document.getElementById('activePlayers').textContent = activePlayers;
             document.getElementById('totalKills').textContent = totalKills.toLocaleString();
             document.getElementById('avgKD').textContent = avgKD;
+        }
 
-            // Add limited data indicators if not logged in
-            const cards = ['totalActivitiesCard', 'activePlayersCard', 'totalKillsCard', 'avgKDCard'];
-            cards.forEach(cardId => {
-                const card = document.getElementById(cardId);
-                if (!isLoggedIn && hasLimitedData) {
-                    card.classList.add('limited');
-                } else {
-                    card.classList.remove('limited');
-                }
-            });
+        function updateRankings() {
+            const timeRankings = document.getElementById('timeRankings');
+            const killsRankings = document.getElementById('killsRankings');
+            
+            if (cachedData.memberStats.size === 0) {
+                timeRankings.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">No data available</div>';
+                killsRankings.innerHTML = '<div style="text-align: center; color: #888; padding: 20px;">No data available</div>';
+                return;
+            }
+
+            // Time played rankings
+            const timeRanked = Array.from(cachedData.memberStats.values())
+                .filter(stats => stats.totalTimePlayed > 0)
+                .sort((a, b) => b.totalTimePlayed - a.totalTimePlayed)
+                .slice(0, 10);
+
+            timeRankings.innerHTML = timeRanked.map((stats, index) => {
+                const hours = Math.floor(stats.totalTimePlayed / 3600);
+                const minutes = Math.floor((stats.totalTimePlayed % 3600) / 60);
+                return `
+                    <div class="ranking-item">
+                        <div class="ranking-position">${index + 1}</div>
+                        <div class="ranking-name">${stats.displayName}</div>
+                        <div class="ranking-value">${hours}h ${minutes}m</div>
+                    </div>
+                `;
+            }).join('') || '<div style="text-align: center; color: #888; padding: 20px;">No time data</div>';
+
+            // Kills rankings
+            const killsRanked = Array.from(cachedData.memberStats.values())
+                .filter(stats => stats.totalKills > 0)
+                .sort((a, b) => b.totalKills - a.totalKills)
+                .slice(0, 10);
+
+            killsRankings.innerHTML = killsRanked.map((stats, index) => `
+                <div class="ranking-item">
+                    <div class="ranking-position">${index + 1}</div>
+                    <div class="ranking-name">${stats.displayName}</div>
+                    <div class="ranking-value">${stats.totalKills}</div>
+                </div>
+            `).join('') || '<div style="text-align: center; color: #888; padding: 20px;">No kills data</div>';
         }
 
         function updateActivityControls() {
-            const totalCount = allActivities.length;
+            const totalCount = filteredActivities.length;
             const shownCount = displayedActivities.length;
             
             document.getElementById('totalCount').textContent = totalCount;
             document.getElementById('shownCount').textContent = shownCount;
-            
-            const dataLevel = document.getElementById('dataLevel');
-            if (!isLoggedIn) {
-                dataLevel.textContent = '(Public data only)';
-            } else {
-                dataLevel.textContent = `(${optedInMembers.size} opted-in members)`;
-            }
             
             const loadMoreBtn = document.getElementById('loadMoreBtn');
             loadMoreBtn.disabled = shownCount >= totalCount;
@@ -867,19 +937,17 @@
             const container = document.getElementById('activities');
             
             if (activities.length === 0) {
-                container.innerHTML = '<p style="text-align: center; color: #888; padding: 40px;">No recent activities found.</p>';
+                container.innerHTML = '<p style="text-align: center; color: #888; padding: 40px;">No activities found.</p>';
                 return;
             }
 
-            // First, get all unique activity hashes and fetch their definitions
+            // Get activity definitions
             const activityHashes = [...new Set(activities.map(a => a.activityDetails.directorActivityHash).filter(h => h))];
             
-            // Fetch activity definitions in parallel
             const definitionPromises = activityHashes.map(async (hash) => {
                 if (activityDefinitionCache.has(hash)) {
                     return { hash, definition: activityDefinitionCache.get(hash) };
                 }
-                
                 const definition = await getActivityDefinition(hash);
                 if (definition) {
                     activityDefinitionCache.set(hash, definition);
@@ -889,85 +957,22 @@
 
             await Promise.allSettled(definitionPromises);
 
-            const activityDetailsPromises = activities.map(async (activity) => {
-                const hasPrivateAccess = isLoggedIn && optedInMembers.has(activity.memberInfo.membershipId);
-                const pgcr = await getActivityDetails(activity.activityDetails.instanceId, hasPrivateAccess);
-                
-                // Get activity name from definition cache
+            const activityHTML = activities.map((activity) => {
                 const activityHash = activity.activityDetails.directorActivityHash;
                 const definition = activityHash ? activityDefinitionCache.get(activityHash) : null;
                 const activityName = definition?.displayProperties?.name || getActivityModeString(activity.activityDetails.mode);
+                const activityType = getActivityModeString(activity.activityDetails.mode);
                 
-                // Get improved activity type
-                const activityType = getImprovedActivityType(definition, activity.activityDetails.mode, activityHash);
-                
-                return { activity, pgcr, hasPrivateAccess, activityName, activityType };
-            });
-
-            const activityDetails = await Promise.allSettled(activityDetailsPromises);
-
-            const activityHTML = activityDetails.map((result, index) => {
-                if (result.status === 'rejected') return '';
-                
-                const { activity, pgcr, hasPrivateAccess, activityName, activityType } = result.value;
-                
-                // Use PGCR data if available, otherwise fall back to activity data
-                let statsSource = null;
-                let isComplete = false;
-                
-                if (pgcr && pgcr.entries) {
-                    // Find the clan member's entry in the PGCR
-                    const memberEntry = pgcr.entries.find(entry => 
-                        entry.player.destinyUserInfo.membershipId === activity.memberInfo.membershipId
-                    );
-                    
-                    if (memberEntry && (memberEntry.values || (memberEntry.extended && memberEntry.extended.values))) {
-                        // Combine stats from both locations
-                        const combinedStats = { ...memberEntry.values };
-                        if (memberEntry.extended && memberEntry.extended.values) {
-                            Object.keys(memberEntry.extended.values).forEach(key => {
-                                combinedStats[key] = memberEntry.extended.values[key];
-                            });
-                        }
-                        
-                        statsSource = combinedStats;
-                        isComplete = combinedStats.completionReason && combinedStats.completionReason.basic.value === 0;
-                    }
-                }
-                
-                // Fall back to activity data if PGCR data isn't available
-                if (!statsSource && activity.values) {
-                    statsSource = activity.values;
-                    isComplete = activity.values.completionReason && activity.values.completionReason.basic.value === 0;
-                }
-                
-                const isLimitedData = !hasPrivateAccess && !statsSource;
-                
-                let fireteamMembers = [activity.memberInfo.displayName];
-                let clanMembersInFireteam = clanMemberIds.has(activity.memberInfo.membershipId) ? 1 : 0;
-                
-                if (pgcr && pgcr.entries) {
-                    fireteamMembers = pgcr.entries.map(entry => ({
-                        name: entry.player.destinyUserInfo.displayName,
-                        isClanMember: clanMemberIds.has(entry.player.destinyUserInfo.membershipId),
-                        isOptedIn: optedInMembers.has(entry.player.destinyUserInfo.membershipId)
-                    }));
-                    clanMembersInFireteam = fireteamMembers.filter(m => m.isClanMember).length;
-                }
+                const statsSource = activity.values;
+                const isComplete = statsSource?.completionReason?.basic?.value === 0;
                 
                 return `
-                    <div class="activity-item ${isLimitedData ? 'limited' : ''}" onclick="openActivityDetails('${activity.activityDetails.instanceId}')">
+                    <div class="activity-item" onclick="openActivityDetails('${activity.activityDetails.instanceId}')">
                         <div class="activity-header">
                             <div class="activity-info">
-                                <div class="activity-name">
-                                    ${activityName}
-                                </div>
-                                <div class="activity-mode">
-                                    ${activityType}
-                                </div>
-                                <div class="activity-time">
-                                    ${formatDate(activity.period)}
-                                </div>
+                                <div class="activity-name">${activityName}</div>
+                                <div class="activity-mode">${activityType}</div>
+                                <div class="activity-time">${formatDate(activity.period)}</div>
                             </div>
                             <div class="activity-status ${isComplete ? 'status-complete' : 'status-incomplete'}">
                                 ${isComplete ? 'Complete' : 'Incomplete'}
@@ -980,12 +985,12 @@
                                 <span class="detail-value">${statsSource?.activityDurationSeconds ? Math.floor(statsSource.activityDurationSeconds.basic.value / 60) + 'm' : 'N/A'}</span>
                             </div>
                             <div class="detail-item">
-                                <span class="detail-label">Clan Members:</span>
-                                <span class="detail-value">${clanMembersInFireteam}/${fireteamMembers.length}</span>
+                                <span class="detail-label">Player:</span>
+                                <span class="detail-value">${activity.memberInfo.displayName}</span>
                             </div>
                         </div>
                         
-                        ${statsSource && !isLimitedData ? `
+                        ${statsSource ? `
                         <div class="stats-preview">
                             ${statsSource.kills ? `
                             <div class="stat-item">
@@ -1011,42 +1016,8 @@
                                 <span class="stat-label-small">Score</span>
                             </div>
                             ` : ''}
-                            ${statsSource.weaponKillsAbility && statsSource.weaponKillsAbility.basic.value > 0 ? `
-                            <div class="stat-item">
-                                <span class="stat-value-small">${statsSource.weaponKillsAbility.basic.value}</span>
-                                <span class="stat-label-small">Ability</span>
-                            </div>
-                            ` : ''}
-                            ${statsSource.weaponKillsSuper && statsSource.weaponKillsSuper.basic.value > 0 ? `
-                            <div class="stat-item">
-                                <span class="stat-value-small">${statsSource.weaponKillsSuper.basic.value}</span>
-                                <span class="stat-label-small">Super</span>
-                            </div>
-                            ` : ''}
-                        </div>
-                        ` : isLimitedData ? `
-                        <div class="stats-preview">
-                            <div class="stat-item">
-                                <span class="stat-value-small">🔒</span>
-                                <span class="stat-label-small">Login Required</span>
-                            </div>
                         </div>
                         ` : ''}
-                        
-                        <div class="fireteam">
-                            <div class="fireteam-title">Fireteam Members (${fireteamMembers.length}):</div>
-                            <div class="fireteam-members">
-                                ${Array.isArray(fireteamMembers) ? 
-                                    fireteamMembers.slice(0, 6).map(member => {
-                                        let className = 'member-tag';
-                                        if (member.isOptedIn) className += ' opted-in-member';
-                                        else if (member.isClanMember) className += ' clan-member';
-                                        return `<div class="${className}">${member.name || member}</div>`;
-                                    }).join('') + (fireteamMembers.length > 6 ? '<div class="member-tag">+' + (fireteamMembers.length - 6) + ' more</div>' : '')
-                                    : `<div class="member-tag clan-member">${fireteamMembers}</div>`
-                                }
-                            </div>
-                        </div>
                     </div>
                 `;
             }).join('');
@@ -1057,7 +1028,7 @@
         function loadMoreActivities() {
             const startIndex = currentPage * CONFIG.ACTIVITIES_PER_PAGE;
             const endIndex = startIndex + CONFIG.ACTIVITIES_PER_PAGE;
-            const newActivities = allActivities.slice(startIndex, endIndex);
+            const newActivities = filteredActivities.slice(startIndex, endIndex);
             
             displayedActivities = [...displayedActivities, ...newActivities];
             currentPage++;
@@ -1071,131 +1042,91 @@
             window.open(url, '_blank');
         }
 
-        async function collectRecentActivities() {
-            const allRecentActivities = [];
-            const activityPromises = [];
-
-            for (const member of clanMembers) {
-                const membershipType = member.destinyUserInfo.membershipType;
-                const membershipId = member.destinyUserInfo.membershipId;
-                
-                try {
-                    const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`;
-                    const useAuth = isLoggedIn && optedInMembers.has(membershipId);
-                    const profile = await makeAPIRequest(profileEndpoint, useAuth);
-                    
-                    if (profile && profile.characters && profile.characters.data) {
-                        const characters = Object.keys(profile.characters.data);
-                        
-                        for (const characterId of characters.slice(0, 3)) {
-                            activityPromises.push(
-                                getActivityHistory(membershipType, membershipId, characterId, 25)
-                                    .then(activities => 
-                                        activities
-                                            .filter(activity => isWithinLast24Hours(activity.period))
-                                            .map(activity => ({
-                                                ...activity,
-                                                memberInfo: {
-                                                    displayName: member.destinyUserInfo.displayName,
-                                                    membershipType: membershipType,
-                                                    membershipId: membershipId,
-                                                    characterId: characterId,
-                                                    isOptedIn: optedInMembers.has(membershipId)
-                                                }
-                                            }))
-                                    )
-                            );
-                        }
-                    }
-                } catch (error) {
-                    if (error.message.includes('private') || error.message.includes('No peeking')) {
-                        console.log(`Profile is private for member ${member.destinyUserInfo.displayName}, skipping...`);
-                    } else {
-                        console.error(`Error getting profile for member ${member.destinyUserInfo.displayName}:`, error);
-                    }
-                }
-            }
-
-            const activityResults = await Promise.allSettled(activityPromises);
+        async function loadRecentActivities() {
+            const loadBtn = document.getElementById('loadDataBtn');
+            loadBtn.disabled = true;
+            loadBtn.textContent = 'Loading...';
             
-            activityResults.forEach(result => {
-                if (result.status === 'fulfilled' && result.value) {
-                    allRecentActivities.push(...result.value);
-                }
-            });
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
 
-            // Remove duplicates based on instanceId and sort by date
-            const uniqueActivities = allRecentActivities.reduce((acc, activity) => {
-                const key = activity.activityDetails.instanceId;
-                if (!acc.has(key)) {
-                    acc.set(key, activity);
-                }
-                return acc;
-            }, new Map());
-
-            const sortedActivities = Array.from(uniqueActivities.values())
-                .sort((a, b) => new Date(b.period) - new Date(a.period));
-            
-            console.log(`Collected ${sortedActivities.length} activities from ${clanMembers.length} clan members`);
-            if (isLoggedIn) {
-                console.log(`Enhanced data available for ${optedInMembers.size} opted-in members`);
-            }
-            
-            return sortedActivities;
-        }
-
-        async function init() {
             try {
-                // Check user session first
-                await checkUserSession();
+                if (!clanData) {
+                    updateDataStatus('Getting clan information...');
+                    clanData = await getClanByName();
+                    
+                    if (!clanData || !clanData.detail) {
+                        throw new Error('Clan not found');
+                    }
 
-                console.log('Getting clan information...');
-                clanData = await getClanByName();
-                
-                if (!clanData || !clanData.detail) {
-                    throw new Error('Clan not found');
+                    updateDataStatus('Getting clan members...');
+                    clanMembers = await getClanMembers(clanData.detail.groupId);
+                    
+                    if (clanMembers.length === 0) {
+                        throw new Error('No clan members found');
+                    }
+
+                    clanMemberIds = new Set(clanMembers.map(member => member.destinyUserInfo.membershipId));
+                    populateMemberSelect();
                 }
 
-                console.log('Getting clan members...');
-                clanMembers = await getClanMembers(clanData.detail.groupId);
+                updateDataStatus('Collecting activities...');
                 
-                if (clanMembers.length === 0) {
-                    throw new Error('No clan members found');
+                // Load cache first
+                loadCache();
+                cleanOldActivities();
+                
+                // Get newest activity date from cache
+                let newestCachedDate = 0;
+                if (cachedData.activities.length > 0) {
+                    newestCachedDate = Math.max(...cachedData.activities.map(a => new Date(a.period).getTime()));
                 }
 
-                // Create set of clan member IDs for quick lookup
-                clanMemberIds = new Set(clanMembers.map(member => member.destinyUserInfo.membershipId));
-
-                console.log(`Found ${clanMembers.length} clan members`);
-
-                console.log('Collecting recent activities...');
+                // Collect new activities
                 allActivities = await collectRecentActivities();
+                filteredActivities = [...allActivities];
                 
-                console.log(`Found ${allActivities.length} activities in last ${CONFIG.HOURS_LOOKBACK} hours`);
-
+                // Reset pagination
+                displayedActivities = [];
+                currentPage = 0;
+                
+                updateDataStatus(`Loaded ${allActivities.length} activities (${new Date().toLocaleTimeString()})`);
+                
                 hideLoading();
                 showContent();
                 
                 updateStatsBar();
+                updateRankings();
                 loadMoreActivities();
 
-                // Set up load more button
-                document.getElementById('loadMoreBtn').addEventListener('click', loadMoreActivities);
-
-                // Check for login success message
-                const urlParams = new URLSearchParams(window.location.search);
-                if (urlParams.get('login') === 'success') {
-                    // Remove the parameter from URL
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                }
-
             } catch (error) {
-                console.error('Initialization failed:', error);
+                console.error('Load failed:', error);
                 showError(`Failed to load clan data: ${error.message}`);
+                updateDataStatus('Load failed');
+            } finally {
+                loadBtn.disabled = false;
+                loadBtn.textContent = 'Refresh Data';
             }
         }
 
-        document.addEventListener('DOMContentLoaded', init);
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load cached data on page load if available
+            if (loadCache() && cachedData.activities.length > 0) {
+                cleanOldActivities();
+                allActivities = cachedData.activities;
+                filteredActivities = [...allActivities];
+                displayedActivities = [];
+                currentPage = 0;
+                
+                updateDataStatus(`Cached data: ${allActivities.length} activities`);
+                showContent();
+                updateStatsBar();
+                updateRankings();
+                loadMoreActivities();
+                
+                document.getElementById('loadDataBtn').textContent = 'Refresh Data';
+            }
+        });
     </script>
 </body>
 </html>
