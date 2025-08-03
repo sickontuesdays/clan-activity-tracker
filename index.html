@@ -624,6 +624,34 @@
                     throw new Error('No clan members found');
                 }
 
+                // Get proper display names for each member
+                updateDataStatus('Getting member display names...');
+                clanMembers = await Promise.all(clanMembers.map(async (member) => {
+                    try {
+                        const membershipType = member.destinyUserInfo.membershipType;
+                        const membershipId = member.destinyUserInfo.membershipId;
+                        
+                        const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=Profiles`;
+                        const profileData = await makeAPIRequest(profileEndpoint);
+                        
+                        // Get the proper display name
+                        const properDisplayName = profileData?.profile?.data?.userInfo?.bungieGlobalDisplayName || 
+                                                 profileData?.profile?.data?.userInfo?.displayName || 
+                                                 member.destinyUserInfo.displayName;
+                        
+                        return {
+                            ...member,
+                            properDisplayName: properDisplayName
+                        };
+                    } catch (error) {
+                        // If profile is private or fails, use original display name
+                        return {
+                            ...member,
+                            properDisplayName: member.destinyUserInfo.displayName
+                        };
+                    }
+                }));
+
                 clanMemberIds = new Set(clanMembers.map(member => member.destinyUserInfo.membershipId));
                 populateMemberSelect();
                 
@@ -839,13 +867,14 @@
             const activityPromises = [];
             const memberStats = new Map();
 
-            // Initialize stats for ALL clan members
+            // Initialize stats for ALL clan members using proper display names
             for (const member of clanMembers) {
                 const membershipId = member.destinyUserInfo.membershipId;
-                const displayName = member.destinyUserInfo.displayName;
+                const displayName = member.properDisplayName || member.destinyUserInfo.displayName;
                 
                 memberStats.set(membershipId, {
                     displayName: displayName,
+                    properDisplayName: member.properDisplayName || displayName,
                     totalTimePlayed: 0,
                     totalKills: 0,
                     activities: [],
@@ -856,7 +885,7 @@
             for (const member of clanMembers) {
                 const membershipType = member.destinyUserInfo.membershipType;
                 const membershipId = member.destinyUserInfo.membershipId;
-                const displayName = member.destinyUserInfo.displayName;
+                const displayName = member.properDisplayName || member.destinyUserInfo.displayName;
                 
                 try {
                     const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=200`;
@@ -876,6 +905,7 @@
                                                     ...activity,
                                                     memberInfo: {
                                                         displayName: displayName,
+                                                        properDisplayName: member.properDisplayName || displayName,
                                                         membershipType: membershipType,
                                                         membershipId: membershipId,
                                                         characterId: characterId
@@ -969,13 +999,13 @@
             select.innerHTML = '<option value="">All Members</option>';
             
             const sortedMembers = [...clanMembers].sort((a, b) => 
-                a.destinyUserInfo.displayName.localeCompare(b.destinyUserInfo.displayName)
+                (a.properDisplayName || a.destinyUserInfo.displayName).localeCompare(b.properDisplayName || b.destinyUserInfo.displayName)
             );
             
             sortedMembers.forEach(member => {
                 const option = document.createElement('option');
                 option.value = member.destinyUserInfo.membershipId;
-                option.textContent = member.destinyUserInfo.displayName;
+                option.textContent = member.properDisplayName || member.destinyUserInfo.displayName;
                 select.appendChild(option);
             });
         }
@@ -1049,11 +1079,12 @@
                 const minutes = Math.floor((stats.totalTimePlayed % 3600) / 60);
                 const timeText = stats.hasData ? `${hours}h ${minutes}m` : 'No data (24h)';
                 const isActive = stats.hasData;
+                const displayName = stats.properDisplayName || stats.displayName;
                 
                 return `
                     <div class="ranking-item ${!isActive ? 'inactive' : ''}">
                         <div class="ranking-position">${index + 1}</div>
-                        <div class="ranking-name">${stats.displayName}</div>
+                        <div class="ranking-name">${displayName}</div>
                         <div class="ranking-value">${timeText}</div>
                     </div>
                 `;
@@ -1067,11 +1098,12 @@
             killsRankings.innerHTML = killsRanked.map((stats, index) => {
                 const killsText = stats.hasData ? stats.totalKills.toString() : 'No data (24h)';
                 const isActive = stats.hasData;
+                const displayName = stats.properDisplayName || stats.displayName;
                 
                 return `
                     <div class="ranking-item ${!isActive ? 'inactive' : ''}">
                         <div class="ranking-position">${index + 1}</div>
-                        <div class="ranking-name">${stats.displayName}</div>
+                        <div class="ranking-name">${displayName}</div>
                         <div class="ranking-value">${killsText}</div>
                     </div>
                 `;
@@ -1153,8 +1185,17 @@
                 let fireteamHTML = '';
                 if (activity.pgcrData && activity.pgcrData.entries) {
                     const fireteamMembers = activity.pgcrData.entries.map(entry => {
-                        const playerName = entry.player.destinyUserInfo.displayName;
+                        let playerName = entry.player.destinyUserInfo.displayName;
                         const isClanMember = clanMemberIds.has(entry.player.destinyUserInfo.membershipId);
+                        
+                        // If this is a clan member, use their proper display name
+                        if (isClanMember) {
+                            const clanMember = clanMembers.find(m => m.destinyUserInfo.membershipId === entry.player.destinyUserInfo.membershipId);
+                            if (clanMember && clanMember.properDisplayName) {
+                                playerName = clanMember.properDisplayName;
+                            }
+                        }
+                        
                         return `<span class="member-tag ${isClanMember ? 'clan-member' : ''}">${playerName}</span>`;
                     });
                     
@@ -1188,7 +1229,7 @@
                             </div>
                             <div class="detail-item">
                                 <span class="detail-label">Player:</span>
-                                <span class="detail-value">${activity.memberInfo.displayName}</span>
+                                <span class="detail-value">${activity.memberInfo.properDisplayName || activity.memberInfo.displayName}</span>
                             </div>
                         </div>
                         
@@ -1269,6 +1310,34 @@
                     if (clanMembers.length === 0) {
                         throw new Error('No clan members found');
                     }
+
+                    // Get proper display names for each member
+                    updateDataStatus('Getting member display names...');
+                    clanMembers = await Promise.all(clanMembers.map(async (member) => {
+                        try {
+                            const membershipType = member.destinyUserInfo.membershipType;
+                            const membershipId = member.destinyUserInfo.membershipId;
+                            
+                            const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=Profiles`;
+                            const profileData = await makeAPIRequest(profileEndpoint);
+                            
+                            // Get the proper display name
+                            const properDisplayName = profileData?.profile?.data?.userInfo?.bungieGlobalDisplayName || 
+                                                     profileData?.profile?.data?.userInfo?.displayName || 
+                                                     member.destinyUserInfo.displayName;
+                            
+                            return {
+                                ...member,
+                                properDisplayName: properDisplayName
+                            };
+                        } catch (error) {
+                            // If profile is private or fails, use original display name
+                            return {
+                                ...member,
+                                properDisplayName: member.destinyUserInfo.displayName
+                            };
+                        }
+                    }));
 
                     clanMemberIds = new Set(clanMembers.map(member => member.destinyUserInfo.membershipId));
                     populateMemberSelect();
