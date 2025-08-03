@@ -1284,7 +1284,7 @@
 
         function openActivityDetails(instanceId) {
             const url = `activity-details.html?instanceId=${instanceId}`;
-            window.open(url, '_blank');
+            window.location.href = url;
         }
 
         async function loadRecentActivities() {
