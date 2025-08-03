@@ -872,15 +872,6 @@
                                         activities
                                             .filter(activity => isWithinLast24Hours(activity.period) && isValidActivity(activity))
                                             .map(activity => {
-                                                // Track member stats
-                                                const stats = memberStats.get(membershipId);
-                                                if (activity.values) {
-                                                    stats.totalTimePlayed += activity.values.activityDurationSeconds?.basic?.value || 0;
-                                                    stats.totalKills += activity.values.kills?.basic?.value || 0;
-                                                    stats.hasData = true;
-                                                }
-                                                stats.activities.push(activity);
-
                                                 return {
                                                     ...activity,
                                                     memberInfo: {
@@ -912,13 +903,40 @@
                 }
             });
 
-            // Get PGCR data for fireteam information
+            // Get PGCR data for each activity to get accurate statistics
             const activitiesWithPGCR = await Promise.all(
                 allRecentActivities.map(async (activity) => {
                     const pgcr = await getPGCR(activity.activityDetails.instanceId);
+                    
+                    // Find the clan member in the PGCR data
+                    let clanMemberEntry = null;
+                    if (pgcr && pgcr.entries) {
+                        clanMemberEntry = pgcr.entries.find(entry => 
+                            entry.player.destinyUserInfo.membershipId === activity.memberInfo.membershipId
+                        );
+                    }
+                    
+                    // Track member stats using PGCR data if available
+                    const stats = memberStats.get(activity.memberInfo.membershipId);
+                    if (clanMemberEntry && clanMemberEntry.values) {
+                        // Combine stats from both locations
+                        const combinedStats = { ...clanMemberEntry.values };
+                        if (clanMemberEntry.extended && clanMemberEntry.extended.values) {
+                            Object.keys(clanMemberEntry.extended.values).forEach(key => {
+                                combinedStats[key] = clanMemberEntry.extended.values[key];
+                            });
+                        }
+                        
+                        stats.totalTimePlayed += combinedStats.activityDurationSeconds?.basic?.value || 0;
+                        stats.totalKills += combinedStats.kills?.basic?.value || 0;
+                        stats.hasData = true;
+                    }
+                    stats.activities.push(activity);
+
                     return {
                         ...activity,
-                        pgcrData: pgcr
+                        pgcrData: pgcr,
+                        clanMemberEntry: clanMemberEntry
                     };
                 })
             );
@@ -991,10 +1009,14 @@
             let totalKills = 0;
             let totalDeaths = 0;
             
+            // Use PGCR data for accurate statistics
             activities.forEach(activity => {
-                if (activity.values) {
-                    totalKills += activity.values.kills?.basic?.value || 0;
-                    totalDeaths += activity.values.deaths?.basic?.value || 0;
+                if (activity.clanMemberEntry && activity.clanMemberEntry.values) {
+                    const stats = activity.clanMemberEntry.values;
+                    const extendedStats = activity.clanMemberEntry.extended?.values || {};
+                    
+                    totalKills += stats.kills?.basic?.value || 0;
+                    totalDeaths += stats.deaths?.basic?.value || 0;
                 }
             });
 
@@ -1105,8 +1127,27 @@
                 const activityName = definition?.displayProperties?.name || getActivityModeString(activity.activityDetails.mode);
                 const activityType = getActivityModeString(activity.activityDetails.mode);
                 
-                const statsSource = activity.values;
-                const isComplete = statsSource?.completionReason?.basic?.value === 0;
+                // Use PGCR data for statistics if available, otherwise fall back to activity history data
+                let statsSource = activity.values || {};
+                let duration = null;
+                let isComplete = true;
+                
+                if (activity.clanMemberEntry && activity.clanMemberEntry.values) {
+                    statsSource = activity.clanMemberEntry.values;
+                    // Combine with extended stats
+                    if (activity.clanMemberEntry.extended && activity.clanMemberEntry.extended.values) {
+                        Object.keys(activity.clanMemberEntry.extended.values).forEach(key => {
+                            statsSource[key] = activity.clanMemberEntry.extended.values[key];
+                        });
+                    }
+                    isComplete = statsSource.completionReason?.basic?.value === 0;
+                } else if (activity.values) {
+                    // Fallback to activity history data
+                    isComplete = activity.values.completionReason?.basic?.value === 0;
+                }
+                
+                // Check if this is a raid
+                const isRaidActivity = activity.activityDetails.mode === 4;
                 
                 // Build fireteam section with PGCR data
                 let fireteamHTML = '';
@@ -1151,7 +1192,7 @@
                             </div>
                         </div>
                         
-                        ${statsSource ? `
+                        ${statsSource && Object.keys(statsSource).length > 0 ? `
                         <div class="stats-preview">
                             ${statsSource.kills ? `
                             <div class="stat-item">
@@ -1173,7 +1214,7 @@
                             ` : ''}
                             ${statsSource.score ? `
                             <div class="stat-item">
-                                <span class="stat-value-small">${statsSource.score.basic.value.toLocaleString()}</span>
+                                <span class="stat-value-small">${isRaidActivity ? 'N/A' : statsSource.score.basic.value.toLocaleString()}</span>
                                 <span class="stat-label-small">Score</span>
                             </div>
                             ` : ''}

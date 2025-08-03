@@ -271,14 +271,27 @@
             white-space: nowrap;
         }
 
-        .emblem-subtitle {
-            font-size: 0.75em;
-            color: rgba(255, 255, 255, 0.8);
+        .player-light-level {
+            font-size: 0.8em;
+            color: #f7931e;
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
             margin-top: 2px;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+        }
+
+        .guardian-rank-badge {
+            position: absolute;
+            top: 6px;
+            right: 54px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #f7931e;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.7em;
+            color: #f7931e;
+            z-index: 3;
         }
 
         .player-class {
@@ -595,6 +608,7 @@
         let weaponDefinitionCache = new Map();
         let emblemDefinitionCache = new Map();
         let expandedStates = {};
+        let isRaidActivity = false;
 
         function showError(message) {
             document.getElementById('error').textContent = message;
@@ -674,22 +688,6 @@
             }
         }
 
-        async function getEmblemDefinition(emblemHash) {
-            if (emblemDefinitionCache.has(emblemHash)) {
-                return emblemDefinitionCache.get(emblemHash);
-            }
-
-            try {
-                const endpoint = `/Destiny2/Manifest/DestinyInventoryItemDefinition/${emblemHash}/`;
-                const response = await makeAPIRequest(endpoint);
-                emblemDefinitionCache.set(emblemHash, response);
-                return response;
-            } catch (error) {
-                console.warn('Could not load emblem definition for hash:', emblemHash, error);
-                return null;
-            }
-        }
-
         function formatDate(dateString) {
             const date = new Date(dateString);
             return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
@@ -733,6 +731,9 @@
 
             const activity = pgcrData.activityDetails;
             
+            // Check if this is a raid activity
+            isRaidActivity = activity.mode === 4;
+            
             // Get activity name from definition or fall back to mode string
             const activityName = activityDefinition ? 
                 activityDefinition.displayProperties.name : 
@@ -744,8 +745,27 @@
             document.getElementById('instanceId').textContent = activity.instanceId;
             document.getElementById('activityHash').textContent = activity.directorActivityHash || 'N/A';
             
+            // Duration - check multiple possible locations
+            let duration = null;
             if (activity.activityDurationSeconds) {
-                document.getElementById('activityDuration').textContent = formatDuration(activity.activityDurationSeconds);
+                duration = activity.activityDurationSeconds;
+            } else if (pgcrData.activityDurationSeconds) {
+                duration = pgcrData.activityDurationSeconds;
+            } else if (pgcrData.entries && pgcrData.entries[0] && pgcrData.entries[0].values && pgcrData.entries[0].values.activityDurationSeconds) {
+                duration = pgcrData.entries[0].values.activityDurationSeconds.basic.value;
+            }
+            
+            if (duration) {
+                document.getElementById('activityDuration').textContent = formatDuration(duration);
+                console.log('Duration found:', duration, 'seconds');
+            } else {
+                document.getElementById('activityDuration').textContent = 'N/A';
+                console.log('Duration not found in any expected location');
+                console.log('Activity details:', activity);
+                console.log('PGCR data keys:', Object.keys(pgcrData));
+                if (pgcrData.entries && pgcrData.entries[0]) {
+                    console.log('First entry values:', pgcrData.entries[0].values ? Object.keys(pgcrData.entries[0].values) : 'No values');
+                }
             }
             
             document.getElementById('activityStatus').textContent = pgcrData.activityWasStartedFromBeginning ? 'Complete' : 'Joined in Progress';
@@ -783,9 +803,11 @@
                 }
             });
 
-            const teamStatsHTML = Object.keys(allStats)
-                .filter(key => ['kills', 'deaths', 'assists', 'score', 'precisionKills', 
-                               'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper'].includes(key))
+            // Reorder stats: kills-deaths-assists-precision kills-super kills-grenade kills-melee kills-score
+            const statOrder = ['kills', 'deaths', 'assists', 'precisionKills', 'weaponKillsSuper', 'weaponKillsGrenade', 'weaponKillsMelee', 'score'];
+            
+            const teamStatsHTML = statOrder
+                .filter(statKey => allStats[statKey]) // Only include stats that exist
                 .map(statKey => {
                     const stat = allStats[statKey];
                     const total = stat.total;
@@ -796,10 +818,14 @@
                     if (statKey === 'weaponKillsMelee') label = 'Melee Kills';
                     if (statKey === 'weaponKillsSuper') label = 'Super Kills';
                     
+                    // Show N/A for score in raids
+                    const displayValue = (statKey === 'score' && isRaidActivity) ? 'N/A' : total.toLocaleString();
+                    const displayAvg = (statKey === 'score' && isRaidActivity) ? 'N/A' : avg;
+                    
                     return `
                         <div class="team-stat">
-                            <span class="team-stat-value">${total.toLocaleString()}</span>
-                            <span class="team-stat-label">${label} (${avg} avg)</span>
+                            <span class="team-stat-value">${displayValue}</span>
+                            <span class="team-stat-label">${label} (${displayAvg} avg)</span>
                         </div>
                     `;
                 }).join('');
@@ -859,24 +885,21 @@
                 const stats = entry.values || {};
                 const extendedStats = entry.extended?.values || {};
                 
-                // Get emblem data
+                // Get player information from PGCR entry
+                const playerName = player.destinyUserInfo?.bungieGlobalDisplayName || player.destinyUserInfo?.displayName || 'Unknown Player';
+                
+                // Emblem data from PGCR entry
                 const emblemHash = player.emblemHash;
                 const emblemBackgroundPath = player.emblemBackgroundPath;
                 const emblemPath = player.emblemPath;
                 
                 // Debug emblem data
                 console.log('Player emblem data:', {
-                    name: player.destinyUserInfo.displayName,
+                    name: playerName,
                     emblemHash,
                     emblemBackgroundPath,
                     emblemPath
                 });
-                
-                // Get emblem definition for additional styling
-                let emblemDef = null;
-                if (emblemHash) {
-                    emblemDef = await getEmblemDefinition(emblemHash);
-                }
                 
                 // Create emblem URLs - ensure they're full URLs
                 const emblemBackgroundUrl = emblemBackgroundPath ? `https://www.bungie.net${emblemBackgroundPath}` : '';
@@ -887,16 +910,45 @@
                     icon: emblemIconUrl
                 });
                 
+                // Get light level and guardian rank from character data if available
+                let lightLevel = 'N/A';
+                let guardianRank = 'N/A';
+                
+                // Try to get character data from API call
+                try {
+                    const membershipType = player.destinyUserInfo.membershipType;
+                    const membershipId = player.destinyUserInfo.membershipId;
+                    const characterId = player.characterId;
+                    
+                    // Get full profile data
+                    const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=Profiles,Characters`;
+                    const profileData = await makeAPIRequest(profileEndpoint);
+                    
+                    if (profileData && profileData.characters && profileData.characters.data) {
+                        const characterData = profileData.characters.data[characterId];
+                        if (characterData) {
+                            lightLevel = characterData.light || lightLevel;
+                        }
+                    }
+                    
+                    if (profileData && profileData.profile && profileData.profile.data) {
+                        guardianRank = profileData.profile.data.currentGuardianRank || guardianRank;
+                    }
+                } catch (error) {
+                    console.warn('Could not get additional character data:', error);
+                }
+                
                 // Create emblem HTML with improved structure
                 const emblemHTML = `
                     <div class="player-emblem">
                         ${emblemBackgroundUrl ? `<img src="${emblemBackgroundUrl}" alt="Emblem Background" class="emblem-background" onerror="console.log('Failed to load emblem background:', this.src)" />` : ''}
                         <div class="emblem-overlay"></div>
                         <div class="emblem-content">
-                            <div class="player-name">${player.destinyUserInfo.displayName}</div>
-                            <div class="emblem-subtitle">Guardian</div>
+                            <div class="player-name">${playerName}</div>
+                            <div class="player-light-level">Light ${lightLevel}</div>
                         </div>
                         ${emblemIconUrl ? `<img src="${emblemIconUrl}" alt="Emblem Icon" class="emblem-icon" onerror="console.log('Failed to load emblem icon:', this.src)" />` : ''}
+                        ${guardianRank !== 'N/A' ? `<div class="guardian-rank-badge">Rank ${guardianRank}</div>` : ''}
                     </div>
                 `;
                 
@@ -906,30 +958,34 @@
                     allStats[key] = extendedStats[key];
                 });
                 
-                // Main stats - always show ability kills even if 0
-                const mainStats = [
+                // Main stats in order: kills-deaths-assists-precision kills-super kills-grenade kills-melee kills-score
+                const mainStatsOrder = [
                     { key: 'kills', label: 'Kills' },
                     { key: 'deaths', label: 'Deaths' },
                     { key: 'assists', label: 'Assists' },
-                    { key: 'score', label: 'Score' },
                     { key: 'precisionKills', label: 'Precision' },
+                    { key: 'weaponKillsSuper', label: 'Super' },
                     { key: 'weaponKillsGrenade', label: 'Grenade' },
                     { key: 'weaponKillsMelee', label: 'Melee' },
-                    { key: 'weaponKillsSuper', label: 'Super' }
+                    { key: 'score', label: 'Score' }
                 ];
 
-                const mainStatsHTML = mainStats.map(statInfo => {
+                const mainStatsHTML = mainStatsOrder.map(statInfo => {
                     const value = allStats[statInfo.key]?.basic?.value || 0;
+                    
+                    // Show N/A for score in raids
+                    const displayValue = (statInfo.key === 'score' && isRaidActivity) ? 'N/A' : 
+                                       (typeof value === 'number' ? value.toLocaleString() : value);
                     
                     return `
                         <div class="stat-item">
-                            <span class="stat-value">${typeof value === 'number' ? value.toLocaleString() : value}</span>
+                            <span class="stat-value">${displayValue}</span>
                             <span class="stat-label">${statInfo.label}</span>
                         </div>
                     `;
                 }).join('');
 
-                // Weapons section (moved above additional stats)
+                // Weapons section
                 let weaponsHTML = '';
                 if (entry.extended && entry.extended.weapons && entry.extended.weapons.length > 0) {
                     const weaponStats = await Promise.all(entry.extended.weapons.map(async (weapon) => {
@@ -970,8 +1026,8 @@
                 }
 
                 // Additional stats for interactive section - all other stats
-                const excludedStats = new Set(['kills', 'deaths', 'assists', 'score', 'precisionKills', 
-                                             'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper',
+                const excludedStats = new Set(['kills', 'deaths', 'assists', 'precisionKills', 
+                                             'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper', 'score',
                                              'activityDurationSeconds', 'completionReason', 'startSeconds']);
                 
                 const additionalStatsData = Object.keys(allStats)

@@ -249,45 +249,6 @@
             color: #aaa;
         }
 
-        .phase-breakdown {
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid #333;
-        }
-
-        .phase-title {
-            color: #f7931e;
-            font-size: 1.1em;
-            margin-bottom: 10px;
-            font-weight: bold;
-        }
-
-        .phase-stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 10px;
-        }
-
-        .phase-item {
-            background: rgba(0, 0, 0, 0.2);
-            padding: 10px;
-            border-radius: 4px;
-            border: 1px solid #444;
-            font-size: 0.9em;
-        }
-
-        .phase-name {
-            color: #fff;
-            font-weight: bold;
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .phase-details {
-            color: #f7931e;
-            font-size: 0.8em;
-        }
-
         .no-encounter-data {
             text-align: center;
             padding: 40px;
@@ -432,6 +393,9 @@
 
         function getClassName(classHash) {
             const classes = {
+                0: 'Titan',
+                1: 'Hunter',
+                2: 'Warlock',
                 2271682572: 'Warlock',
                 3655393761: 'Titan',
                 671679327: 'Hunter'
@@ -567,7 +531,7 @@
             const avgTime = players.length > 0 ? Math.floor(totalTime / players.length) : 0;
             const teamKD = totalDeaths > 0 ? (totalKills / totalDeaths).toFixed(2) : totalKills.toFixed(2);
 
-            // Render overview stats
+            // Render overview stats - no score for raid encounters
             const overviewHTML = `
                 <div class="stat-card">
                     <span class="stat-value">${players.length}</span>
@@ -600,18 +564,21 @@
             // Render player performance
             const playerHTML = players.map(player => {
                 const stats = player.values || {};
-                const playerName = player.player?.destinyUserInfo?.displayName || 'Unknown Player';
+                const playerName = player.player?.destinyUserInfo?.bungieGlobalDisplayName || 
+                                 player.player?.destinyUserInfo?.displayName || 
+                                 'Unknown Player';
                 const playerClass = getClassName(player.characterClass);
 
+                // Stats in order: kills-deaths-assists-precision kills-super kills-grenade kills-melee kills
                 const encounterStats = [
                     { key: 'kills', label: 'Kills' },
                     { key: 'deaths', label: 'Deaths' },
                     { key: 'assists', label: 'Assists' },
-                    { key: 'totalDamageDealt', label: 'Damage' },
                     { key: 'precisionKills', label: 'Precision' },
-                    { key: 'weaponKillsAbility', label: 'Ability Kills' },
-                    { key: 'weaponKillsSuper', label: 'Super Kills' },
-                    { key: 'damageTaken', label: 'Damage Taken' }
+                    { key: 'weaponKillsSuper', label: 'Super' },
+                    { key: 'weaponKillsGrenade', label: 'Grenade' },
+                    { key: 'weaponKillsMelee', label: 'Melee' },
+                    { key: 'totalDamageDealt', label: 'Damage' }
                 ].filter(stat => stats[stat.key] && stats[stat.key].basic && stats[stat.key].basic.value > 0);
 
                 const statsHTML = encounterStats.map(stat => {
