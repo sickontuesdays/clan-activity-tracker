@@ -885,60 +885,84 @@
                 const stats = entry.values || {};
                 const extendedStats = entry.extended?.values || {};
                 
-                // Get player information from PGCR entry
-                const playerName = player.destinyUserInfo?.bungieGlobalDisplayName || player.destinyUserInfo?.displayName || 'Unknown Player';
-                
-                // Emblem data from PGCR entry
-                const emblemHash = player.emblemHash;
-                const emblemBackgroundPath = player.emblemBackgroundPath;
-                const emblemPath = player.emblemPath;
-                
-                // Debug emblem data
-                console.log('Player emblem data:', {
-                    name: playerName,
-                    emblemHash,
-                    emblemBackgroundPath,
-                    emblemPath
-                });
-                
-                // Create emblem URLs - ensure they're full URLs
-                const emblemBackgroundUrl = emblemBackgroundPath ? `https://www.bungie.net${emblemBackgroundPath}` : '';
-                const emblemIconUrl = emblemPath ? `https://www.bungie.net${emblemPath}` : '';
-                
-                console.log('Emblem URLs:', {
-                    background: emblemBackgroundUrl,
-                    icon: emblemIconUrl
-                });
-                
-                // Get light level and guardian rank from character data if available
+                // Get full profile data for proper emblem display (same as clan roster)
+                let playerName = player.destinyUserInfo?.displayName || 'Unknown Player';
                 let lightLevel = 'N/A';
                 let guardianRank = 'N/A';
+                let emblemBackgroundUrl = '';
+                let emblemIconUrl = '';
+                let characterClass = 'Unknown';
                 
-                // Try to get character data from API call
                 try {
                     const membershipType = player.destinyUserInfo.membershipType;
                     const membershipId = player.destinyUserInfo.membershipId;
-                    const characterId = player.characterId;
                     
-                    // Get full profile data
+                    // Get full profile data (same approach as clan roster)
                     const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=Profiles,Characters`;
                     const profileData = await makeAPIRequest(profileEndpoint);
                     
-                    if (profileData && profileData.characters && profileData.characters.data) {
-                        const characterData = profileData.characters.data[characterId];
-                        if (characterData) {
-                            lightLevel = characterData.light || lightLevel;
+                    if (profileData) {
+                        // Get player name from profile (bungieGlobalDisplayName preferred)
+                        if (profileData.profile?.data?.userInfo?.bungieGlobalDisplayName) {
+                            playerName = profileData.profile.data.userInfo.bungieGlobalDisplayName;
+                        }
+                        
+                        // Get guardian rank from profile
+                        if (profileData.profile?.data?.currentGuardianRank) {
+                            guardianRank = profileData.profile.data.currentGuardianRank;
+                        }
+                        
+                        // Get active character (most recently played)
+                        if (profileData.characters?.data) {
+                            let activeChar = null;
+                            let latestDate = new Date(0);
+                            
+                            Object.values(profileData.characters.data).forEach(char => {
+                                const charDate = new Date(char.dateLastPlayed);
+                                if (charDate > latestDate) {
+                                    latestDate = charDate;
+                                    activeChar = char;
+                                }
+                            });
+                            
+                            if (activeChar) {
+                                // Extract emblem data from active character
+                                lightLevel = activeChar.light || lightLevel;
+                                characterClass = getClassName(activeChar.classType);
+                                
+                                // Create emblem URLs from active character
+                                if (activeChar.emblemBackgroundPath) {
+                                    emblemBackgroundUrl = `https://www.bungie.net${activeChar.emblemBackgroundPath}`;
+                                }
+                                if (activeChar.emblemPath) {
+                                    emblemIconUrl = `https://www.bungie.net${activeChar.emblemPath}`;
+                                }
+                            }
                         }
                     }
                     
-                    if (profileData && profileData.profile && profileData.profile.data) {
-                        guardianRank = profileData.profile.data.currentGuardianRank || guardianRank;
-                    }
+                    console.log('Player profile data:', {
+                        name: playerName,
+                        lightLevel,
+                        guardianRank,
+                        emblemBackgroundUrl,
+                        emblemIconUrl,
+                        characterClass
+                    });
+                    
                 } catch (error) {
-                    console.warn('Could not get additional character data:', error);
+                    console.warn('Could not get profile data for player:', playerName, error);
+                    // Fallback to PGCR emblem data if profile fetch fails
+                    if (player.emblemBackgroundPath) {
+                        emblemBackgroundUrl = `https://www.bungie.net${player.emblemBackgroundPath}`;
+                    }
+                    if (player.emblemPath) {
+                        emblemIconUrl = `https://www.bungie.net${player.emblemPath}`;
+                    }
+                    characterClass = getClassName(entry.characterClass);
                 }
                 
-                // Create emblem HTML with improved structure
+                // Create emblem HTML with proper styling (same as clan roster)
                 const emblemHTML = `
                     <div class="player-emblem">
                         ${emblemBackgroundUrl ? `<img src="${emblemBackgroundUrl}" alt="Emblem Background" class="emblem-background" onerror="console.log('Failed to load emblem background:', this.src)" />` : ''}
@@ -1075,7 +1099,7 @@
                     <div class="player-card">
                         <div class="player-header">
                             ${emblemHTML}
-                            <div class="player-class">${getClassName(entry.characterClass)}</div>
+                            <div class="player-class">${characterClass}</div>
                         </div>
                         
                         <div class="stat-grid">
