@@ -232,7 +232,7 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            height: 600px;
+            height: 700px;
         }
 
         .player-card:hover {
@@ -244,8 +244,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 15px;
-            padding-bottom: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
             border-bottom: 1px solid #333;
             flex-shrink: 0;
         }
@@ -341,7 +341,7 @@
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 8px;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
 
         .stat-box {
@@ -367,7 +367,7 @@
         }
 
         .weapons-section {
-            margin-bottom: 15px;
+            margin-bottom: 10px;
             flex-grow: 1;
         }
 
@@ -381,12 +381,45 @@
 
         .weapon-item {
             background: rgba(0, 0, 0, 0.3);
-            padding: 6px 8px;
-            margin-bottom: 4px;
-            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 6px;
+            border-radius: 6px;
             border: 1px solid #333;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            min-height: 44px;
+        }
+
+        .weapon-icon {
+            width: 32px;
+            height: 32px;
+            background: rgba(247, 147, 30, 0.2);
+            border: 1px solid #f7931e;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .weapon-info {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .weapon-name {
+            color: #fff;
             font-size: 0.85em;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .weapon-stats {
             color: #ccc;
+            font-size: 0.75em;
         }
 
         .additional-stats-section {
@@ -1298,15 +1331,49 @@
                     `;
                 }).join('');
 
-                // Weapons section
+                // Additional stat boxes (like activity-details.html)
+                const additionalStatBoxes = [
+                    { key: 'weaponKillsSuper', label: 'Super' },
+                    { key: 'weaponKillsGrenade', label: 'Grenade' },
+                    { key: 'weaponKillsMelee', label: 'Melee' },
+                    { key: 'score', label: 'Score' }
+                ];
+
+                const additionalStatBoxesHTML = additionalStatBoxes.map(stat => {
+                    let value = combinedStats[stat.key]?.basic?.value || 0;
+                    // Show N/A for score in raids
+                    const displayValue = (stat.key === 'score' && isRaidActivity) ? 'N/A' : value;
+                    return `
+                        <div class="stat-box">
+                            <span class="stat-value">${displayValue}</span>
+                            <span class="stat-label">${stat.label}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // Weapons section (match activity-details.html format)
                 let weaponsHTML = '<div style="text-align: center; color: #666; font-size: 0.8em;">No weapon data</div>';
+                let weaponCount = 0;
                 if (entry.extended && entry.extended.weapons && entry.extended.weapons.length > 0) {
+                    weaponCount = entry.extended.weapons.length;
                     weaponsHTML = entry.extended.weapons.map(weapon => {
                         const kills = weapon.values.uniqueWeaponKills?.basic?.value || 0;
                         const precision = weapon.values.uniqueWeaponPrecisionKills?.basic?.value || 0;
+                        
+                        // Try to get weapon name from referenceId/itemHash
+                        const weaponHash = weapon.referenceId;
+                        
                         return `
                             <div class="weapon-item">
-                                Kills: ${kills} Precision: ${precision}
+                                <div class="weapon-icon">
+                                    <img src="https://www.bungie.net/common/destiny2_content/icons/weapons/auto_rifle.png" 
+                                         alt="Weapon" style="width: 100%; height: 100%; object-fit: cover;" 
+                                         onerror="this.style.display='none'; this.parentNode.innerHTML='🔫';">
+                                </div>
+                                <div class="weapon-info">
+                                    <div class="weapon-name">Weapon ${weaponHash || 'Unknown'}</div>
+                                    <div class="weapon-stats">Kills: ${kills} Precision: ${precision}</div>
+                                </div>
                             </div>
                         `;
                     }).join('');
@@ -1386,14 +1453,18 @@
                             ${statsHTML}
                         </div>
 
+                        <div class="stat-grid">
+                            ${additionalStatBoxesHTML}
+                        </div>
+
                         <div class="weapons-section">
-                            <div class="weapons-title">Weapons</div>
+                            <div class="weapons-title">Weapons (${weaponCount})</div>
                             ${weaponsHTML}
                         </div>
 
                         <div class="additional-stats-section">
                             <div class="additional-stats-title" id="additional-stats-title-${index}">
-                                Additional Stats
+                                Additional Stats (${additionalStats.length})
                             </div>
                             <div class="additional-stats-tooltip" id="additional-stats-tooltip-${index}">
                                 ${additionalStatsTooltipHTML}
