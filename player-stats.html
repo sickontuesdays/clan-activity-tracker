@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Player Stats Debug - Destiny 2 Clan Tracker</title>
+    <title>Player Stats Debug - S!ck on Tuesdays!</title>
     <style>
         * {
             margin: 0;
@@ -12,18 +12,19 @@
         }
 
         body {
-            background: linear-gradient(135deg, #0f0f23, #1a1a2e);
-            color: #fff;
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #ffffff;
             min-height: 100vh;
         }
 
         .container {
-            max-width: 1800px;
+            max-width: 2000px;
             margin: 0 auto;
             padding: 20px;
         }
 
+        /* Debug Controls - NEW */
         .debug-controls {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid #444;
@@ -65,61 +66,60 @@
             box-shadow: 0 4px 15px rgba(247, 147, 30, 0.4);
         }
 
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            border: 1px solid #333;
+        }
+
+        .header h1 {
+            color: #f7931e;
+            font-size: 2.2em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
         .back-button {
             display: inline-block;
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px 16px;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #f7931e;
             margin-bottom: 20px;
+            padding: 10px 20px;
+            background: rgba(247, 147, 30, 0.2);
             border: 1px solid #f7931e;
+            border-radius: 5px;
+            color: #f7931e;
+            text-decoration: none;
             transition: all 0.3s ease;
         }
 
         .back-button:hover {
-            background: rgba(247, 147, 30, 0.1);
-            transform: translateY(-2px);
-        }
-
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .header h1 {
-            font-size: 2.5em;
-            color: #f7931e;
-            margin-bottom: 10px;
-        }
-
-        .header p {
-            color: #aaa;
-            font-size: 1.1em;
+            background: rgba(247, 147, 30, 0.3);
+            transform: translateY(-1px);
         }
 
         .loading {
             text-align: center;
-            font-size: 1.5em;
+            padding: 40px;
+            font-size: 1.2em;
             color: #f7931e;
-            margin: 50px 0;
         }
 
         .error {
             background: rgba(255, 0, 0, 0.1);
-            border: 1px solid #ff0000;
-            color: #ff6666;
+            border: 1px solid #ff4444;
+            border-radius: 5px;
             padding: 15px;
-            border-radius: 8px;
             margin: 20px 0;
-            text-align: center;
+            color: #ff6666;
         }
 
         .activity-overview {
             background: rgba(0, 0, 0, 0.4);
             border: 1px solid #444;
             border-radius: 10px;
-            padding: 20px;
+            padding: 25px;
             margin-bottom: 25px;
         }
 
@@ -203,18 +203,8 @@
             color: #aaa;
         }
 
-        .player-stats-section {
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid #444;
-            border-radius: 10px;
-            padding: 20px;
+        .player-stats {
             margin-bottom: 25px;
-        }
-
-        .section-title {
-            font-size: 1.5em;
-            color: #f7931e;
-            margin-bottom: 15px;
         }
 
         .player-rows-container {
@@ -232,7 +222,7 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            height: 700px;
+            min-height: 580px;
         }
 
         .player-card:hover {
@@ -244,8 +234,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 8px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
             border-bottom: 1px solid #333;
             flex-shrink: 0;
         }
@@ -313,10 +303,14 @@
 
         .player-name {
             font-size: 1.1em;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            margin-bottom: 2px;
+            color: #ffffff;
+            font-weight: 600;
+            text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+            line-height: 1.2;
+            margin: 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
             cursor: pointer;
             transition: color 0.3s ease;
         }
@@ -325,83 +319,116 @@
             color: #f7931e;
         }
 
-        .player-subtitle {
+        .player-light-level {
             font-size: 0.8em;
             color: #f7931e;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.9);
+            margin-top: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .guardian-rank-badge {
+            position: absolute;
+            top: 6px;
+            right: 54px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid #f7931e;
+            border-radius: 4px;
+            padding: 2px 6px;
+            font-size: 0.7em;
+            color: #f7931e;
+            z-index: 3;
         }
 
         .player-class {
+            background: rgba(247, 147, 30, 0.2);
+            border: 1px solid #f7931e;
+            padding: 4px 12px;
+            border-radius: 15px;
             font-size: 0.8em;
-            color: #aaa;
-            margin-top: 5px;
+            color: #f7931e;
+            flex-shrink: 0;
+            margin-left: 10px;
         }
 
         .stat-grid {
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            margin-bottom: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-shrink: 0;
         }
 
-        .stat-box {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px;
-            border-radius: 6px;
+        .stat-item {
             text-align: center;
+            padding: 8px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 6px;
             border: 1px solid #333;
         }
 
         .stat-value {
             display: block;
-            font-size: 1.1em;
+            font-size: 1.2em;
             font-weight: bold;
             color: #f7931e;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
 
         .stat-label {
-            font-size: 0.8em;
+            display: block;
+            font-size: 0.7em;
             color: #aaa;
-            text-transform: uppercase;
+            word-wrap: break-word;
+        }
+
+        .additional-sections {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-height: 0;
         }
 
         .weapons-section {
-            margin-bottom: 10px;
-            flex-grow: 1;
+            margin-bottom: 15px;
         }
 
         .weapons-title {
             color: #f7931e;
-            font-size: 1em;
-            margin-bottom: 8px;
-            text-transform: uppercase;
+            font-size: 1.1em;
+            margin-bottom: 10px;
             font-weight: bold;
         }
 
+        .weapon-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
         .weapon-item {
-            background: rgba(0, 0, 0, 0.3);
-            padding: 10px;
-            margin-bottom: 6px;
-            border-radius: 6px;
-            border: 1px solid #333;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #444;
+            font-size: 0.85em;
+            flex-shrink: 0;
             display: flex;
             align-items: center;
             gap: 10px;
-            min-height: 44px;
         }
 
         .weapon-icon {
             width: 32px;
             height: 32px;
-            background: rgba(247, 147, 30, 0.2);
-            border: 1px solid #f7931e;
             border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
+            border: 1px solid #666;
             flex-shrink: 0;
+            background: rgba(0, 0, 0, 0.5);
+            object-fit: cover;
         }
 
         .weapon-info {
@@ -412,60 +439,65 @@
 
         .weapon-name {
             color: #fff;
-            font-size: 0.85em;
             font-weight: bold;
-            margin-bottom: 2px;
+            margin-bottom: 3px;
+            font-size: 0.9em;
         }
 
-        .weapon-stats {
-            color: #ccc;
-            font-size: 0.75em;
+        .weapon-stats-row {
+            color: #f7931e;
+            font-size: 0.8em;
         }
 
         .additional-stats-section {
-            margin-top: auto;
+            position: relative;
         }
 
         .additional-stats-title {
             color: #f7931e;
-            font-size: 1em;
-            margin-bottom: 8px;
-            text-transform: uppercase;
+            font-size: 1.1em;
+            margin-bottom: 10px;
             font-weight: bold;
             cursor: pointer;
-            padding: 4px;
-            border-radius: 4px;
-            transition: background-color 0.3s ease;
+            padding: 8px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            transition: all 0.3s ease;
+            user-select: none;
             position: relative;
         }
 
         .additional-stats-title:hover {
-            background-color: rgba(247, 147, 30, 0.1);
+            background: rgba(247, 147, 30, 0.2);
+            border-color: #f7931e;
         }
 
         .additional-stats-title.expanded {
-            background-color: rgba(247, 147, 30, 0.2);
+            background: rgba(247, 147, 30, 0.3);
+            border-color: #f7931e;
         }
 
         .additional-stats-grid {
             display: none;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;
+            flex-direction: column;
+            gap: 4px;
             margin-top: 10px;
         }
 
         .additional-stats-grid.expanded {
-            display: grid;
+            display: flex;
         }
 
         .additional-stat-item {
-            background: rgba(0, 0, 0, 0.3);
+            background: rgba(0, 0, 0, 0.2);
             padding: 6px 8px;
             border-radius: 4px;
-            border: 1px solid #333;
+            border: 1px solid #444;
             font-size: 0.75em;
             display: flex;
             flex-direction: column;
+            height: fit-content;
         }
 
         .additional-stat-item span:first-child {
@@ -524,7 +556,11 @@
             font-size: 1em;
         }
 
-        /* Build Popup Styles */
+        .activity-metadata {
+            display: none;
+        }
+
+        /* Build Popup Styles - NEW */
         .build-popup {
             position: fixed;
             top: 10%;
@@ -747,7 +783,7 @@
             gap: 12px;
         }
 
-        .stat-item {
+        .stat-item-large {
             background: rgba(0, 0, 0, 0.4);
             padding: 10px;
             border-radius: 6px;
@@ -873,10 +909,6 @@
             display: block;
         }
 
-        .activity-metadata {
-            display: none;
-        }
-
         @media (max-width: 1400px) {
             .player-rows-container {
                 grid-template-columns: repeat(2, 1fr);
@@ -924,6 +956,7 @@
             <p>Activity Details with Hover Builds Feature</p>
         </div>
 
+        <!-- Debug Controls - NEW -->
         <div class="debug-controls">
             <h3>Debug Controls</h3>
             <input type="text" id="instanceIdInput" placeholder="Enter Activity Instance ID" />
@@ -980,15 +1013,12 @@
                 </div>
             </div>
 
-            <div class="player-stats-section">
-                <div class="section-title">Player Statistics</div>
-                <div class="player-rows-container" id="playerStats">
-                    <!-- Player cards will be populated here -->
-                </div>
+            <div class="player-stats" id="playerStats">
+                <!-- Player cards will be populated here -->
             </div>
         </div>
 
-        <!-- Build Popup -->
+        <!-- Build Popup - NEW -->
         <div class="popup-overlay" id="popupOverlay">
             <div class="build-popup" id="buildPopup">
                 <div class="build-header">
@@ -1046,27 +1076,27 @@
                         <div class="armor-stats">
                             <div class="section-header">Total Stats</div>
                             <div class="stats-grid">
-                                <div class="stat-item">
+                                <div class="stat-item-large">
                                     <div class="stat-name">Mobility</div>
                                     <div class="stat-value-large" id="totalMobility">42</div>
                                 </div>
-                                <div class="stat-item">
+                                <div class="stat-item-large">
                                     <div class="stat-name">Resilience</div>
                                     <div class="stat-value-large" id="totalResilience">68</div>
                                 </div>
-                                <div class="stat-item">
+                                <div class="stat-item-large">
                                     <div class="stat-name">Recovery</div>
                                     <div class="stat-value-large" id="totalRecovery">72</div>
                                 </div>
-                                <div class="stat-item">
+                                <div class="stat-item-large">
                                     <div class="stat-name">Discipline</div>
                                     <div class="stat-value-large" id="totalDiscipline">58</div>
                                 </div>
-                                <div class="stat-item">
+                                <div class="stat-item-large">
                                     <div class="stat-name">Intellect</div>
                                     <div class="stat-value-large" id="totalIntellect">45</div>
                                 </div>
-                                <div class="stat-item">
+                                <div class="stat-item-large">
                                     <div class="stat-name">Strength</div>
                                     <div class="stat-value-large" id="totalStrength">39</div>
                                 </div>
@@ -1087,36 +1117,22 @@
 
     <script>
         // EXACT COPY of activity-details.html JavaScript with popup functionality added
-
-        // Global variables
+        let activityInstanceId = null;
         let pgcrData = null;
         let activityDefinition = null;
-        let activityInstanceId = null;
-        let isRaidActivity = false;
+        let weaponDefinitionCache = new Map();
+        let emblemDefinitionCache = new Map();
         let expandedStates = {};
+        let isRaidActivity = false;
 
-        // Popup-specific variables
+        // Popup-specific variables - NEW
         let cachedBuildData = {};
         let currentPlayerData = null;
 
         function showError(message) {
             document.getElementById('error').textContent = message;
             document.getElementById('error').style.display = 'block';
-            
-            document.getElementById('content').style.display = 'none';
             document.getElementById('loading').style.display = 'none';
-        }
-
-        function hideError() {
-            document.getElementById('error').style.display = 'none';
-        }
-
-        function showLoading(message = 'Loading...') {
-            document.getElementById('loading').textContent = message;
-            document.getElementById('loading').style.display = 'block';
-            
-            document.getElementById('content').style.display = 'none';
-            hideError();
         }
 
         function hideLoading() {
@@ -1124,86 +1140,162 @@
             document.getElementById('content').style.display = 'block';
         }
 
-        async function getPGCR(instanceId) {
+        function showLoading(message = 'Loading...') {
+            document.getElementById('loading').textContent = message;
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('content').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        async function makeAPIRequest(endpoint) {
             try {
-                const response = await fetch(`/api/bungie?endpoint=/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`);
+                console.log('Making API request to:', `/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
+                const response = await fetch(`/api/bungie?endpoint=${encodeURIComponent(endpoint)}`);
+                
+                console.log('Response status:', response.status);
+                
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('Response error text:', errorText);
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
                 }
+
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                if (data.ErrorCode !== 1) {
+                    throw new Error(`API Error: ${data.Message}`);
+                }
+
                 return data.Response;
             } catch (error) {
-                console.error('Error fetching PGCR:', error);
-                return null;
+                console.error('API Request failed:', error);
+                throw error;
+            }
+        }
+
+        async function getPGCR(instanceId) {
+            try {
+                const endpoint = `/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`;
+                const response = await makeAPIRequest(endpoint);
+                return response;
+            } catch (error) {
+                throw new Error(`Failed to get PGCR: ${error.message}`);
             }
         }
 
         async function getActivityDefinition(activityHash) {
             try {
-                const response = await fetch(`/api/bungie?endpoint=/Destiny2/Manifest/DestinyActivityDefinition/${activityHash}/`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                return data.Response;
+                const endpoint = `/Destiny2/Manifest/DestinyActivityDefinition/${activityHash}/`;
+                const response = await makeAPIRequest(endpoint);
+                return response;
             } catch (error) {
-                console.error('Error fetching activity definition:', error);
+                console.warn('Could not load activity definition:', error);
                 return null;
             }
         }
 
-        async function getEmblemDefinition(emblemHash) {
+        async function getWeaponDefinition(weaponHash) {
+            if (weaponDefinitionCache.has(weaponHash)) {
+                return weaponDefinitionCache.get(weaponHash);
+            }
+
             try {
-                const response = await fetch(`/api/bungie?endpoint=/Destiny2/Manifest/DestinyInventoryItemDefinition/${emblemHash}/`);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                const data = await response.json();
-                return data.Response;
+                const endpoint = `/Destiny2/Manifest/DestinyInventoryItemDefinition/${weaponHash}/`;
+                const response = await makeAPIRequest(endpoint);
+                weaponDefinitionCache.set(weaponHash, response);
+                return response;
             } catch (error) {
-                console.error('Error fetching emblem definition:', error);
+                console.warn('Could not load weapon definition for hash:', weaponHash, error);
                 return null;
             }
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' at ' + date.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        }
+
+        function formatDuration(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = seconds % 60;
+            return `${mins}m ${secs}s`;
+        }
+
+        function getClassName(classHash) {
+            const classes = {
+                2271682572: 'Warlock',
+                3655393761: 'Titan',
+                671679327: 'Hunter'
+            };
+            return classes[classHash] || 'Unknown';
+        }
+
+        function getActivityModeString(mode) {
+            const modes = {
+                0: 'All', 2: 'Story', 3: 'Strike', 4: 'Raid', 5: 'PvP', 6: 'Patrol', 7: 'PvE',
+                10: 'Control', 12: 'Clash', 15: 'Crimson Doubles', 16: 'Nightfall', 18: 'Iron Banner',
+                19: 'Trials', 25: 'Mayhem', 31: 'Supremacy', 32: 'Private Match', 37: 'Survival',
+                38: 'Countdown', 39: 'Trials of the Nine', 40: 'Social', 41: 'Trials Countdown',
+                42: 'Trials Survival', 43: 'Iron Banner Control', 44: 'Iron Banner Clash',
+                45: 'Iron Banner Supremacy', 46: 'Scored Nightfall', 47: 'Scored Heroic Nightfall',
+                48: 'Rumble', 49: 'Doubles', 50: 'Doubles Clash', 51: 'Breakthrough',
+                52: 'Black Armory Run', 53: 'Salvage', 54: 'Iron Banner Salvage', 55: 'PvP Competitive',
+                56: 'PvP Quickplay', 57: 'Clash Quickplay', 58: 'Clash Competitive', 59: 'Control Quickplay',
+                60: 'Control Competitive', 61: 'Gambit Prime', 62: 'Reckoning', 63: 'Menagerie',
+                64: 'VexOffensive', 65: 'NightmareHunt', 66: 'Elimination', 67: 'Momentum',
+                68: 'Dungeon', 69: 'Sundial', 70: 'TrialsOfOsiris'
+            };
+            return modes[mode] || `Mode ${mode}`;
         }
 
         function renderActivityOverview() {
             if (!pgcrData) return;
 
-            let activityName = 'Unknown Activity';
-            if (activityDefinition && activityDefinition.displayProperties) {
-                activityName = activityDefinition.displayProperties.name;
-            }
-
+            const activity = pgcrData.activityDetails;
+            
+            // Check if this is a raid activity
+            isRaidActivity = activity.mode === 4;
+            
+            // Get activity name from definition or fall back to mode string
+            const activityName = activityDefinition ? 
+                activityDefinition.displayProperties.name : 
+                getActivityModeString(activity.mode);
+            
             document.getElementById('activityName').textContent = activityName;
+            document.getElementById('activityMode').textContent = getActivityModeString(activity.mode);
+            document.getElementById('activityDate').textContent = formatDate(pgcrData.period);
+            document.getElementById('instanceId').textContent = activity.instanceId;
+            document.getElementById('activityHash').textContent = activity.directorActivityHash || 'N/A';
             
-            let activityMode = 'Unknown Mode';
-            if (activityDefinition && activityDefinition.activityTypeHash) {
-                const typeMap = {
-                    '2043403989': 'Raid',
-                    '608898761': 'Dungeon',
-                    '1164760504': 'Strike',
-                    '1686739444': 'Nightfall'
-                };
-                activityMode = typeMap[activityDefinition.activityTypeHash] || 'PvE Activity';
-                isRaidActivity = activityDefinition.activityTypeHash === '2043403989';
+            // Duration - check multiple possible locations
+            let duration = null;
+            if (activity.activityDurationSeconds) {
+                duration = activity.activityDurationSeconds;
+            } else if (pgcrData.activityDurationSeconds) {
+                duration = pgcrData.activityDurationSeconds;
+            } else if (pgcrData.entries && pgcrData.entries[0] && pgcrData.entries[0].values && pgcrData.entries[0].values.activityDurationSeconds) {
+                duration = pgcrData.entries[0].values.activityDurationSeconds.basic.value;
             }
             
-            document.getElementById('activityMode').textContent = activityMode;
-            
-            if (pgcrData.period) {
-                const date = new Date(pgcrData.period);
-                document.getElementById('activityDate').textContent = date.toLocaleString();
-            }
-            
-            if (pgcrData.activityDurationSeconds) {
-                const duration = Math.floor(pgcrData.activityDurationSeconds / 60);
-                document.getElementById('activityDuration').textContent = `${duration} minutes`;
+            if (duration) {
+                document.getElementById('activityDuration').textContent = formatDuration(duration);
+                console.log('Duration found:', duration, 'seconds');
+            } else {
+                document.getElementById('activityDuration').textContent = 'N/A';
+                console.log('Duration not found in any expected location');
+                console.log('Activity details:', activity);
+                console.log('PGCR data keys:', Object.keys(pgcrData));
+                if (pgcrData.entries && pgcrData.entries[0]) {
+                    console.log('First entry values:', pgcrData.entries[0].values ? Object.keys(pgcrData.entries[0].values) : 'No values');
+                }
             }
             
             document.getElementById('activityStatus').textContent = pgcrData.activityWasStartedFromBeginning ? 'Complete' : 'Joined in Progress';
             document.getElementById('playerCount').textContent = pgcrData.entries.length;
-            document.getElementById('instanceId').textContent = pgcrData.activityDetails.instanceId;
-            document.getElementById('activityHash').textContent = pgcrData.activityDetails.referenceId;
         }
 
         function renderTeamStats() {
@@ -1237,11 +1329,11 @@
                 }
             });
 
-            // Remove hard-coded values - use real data
+            // Reorder stats: kills-deaths-assists-precision kills-super kills-grenade kills-melee kills-score
             const statOrder = ['kills', 'deaths', 'assists', 'precisionKills', 'weaponKillsSuper', 'weaponKillsGrenade', 'weaponKillsMelee', 'score'];
             
             const teamStatsHTML = statOrder
-                .filter(statKey => allStats[statKey])
+                .filter(statKey => allStats[statKey]) // Only include stats that exist
                 .map(statKey => {
                     const stat = allStats[statKey];
                     const total = stat.total;
@@ -1252,8 +1344,8 @@
                     if (statKey === 'weaponKillsMelee') label = 'Melee Kills';
                     if (statKey === 'weaponKillsSuper') label = 'Super Kills';
                     
-                    const displayValue = (statKey === 'score' && isRaidActivity) ?
-                        'N/A' : total.toLocaleString();
+                    // Show N/A for score in raids
+                    const displayValue = (statKey === 'score' && isRaidActivity) ? 'N/A' : total.toLocaleString();
                     const displayAvg = (statKey === 'score' && isRaidActivity) ? 'N/A' : avg;
                     
                     return `
@@ -1267,239 +1359,6 @@
             document.getElementById('teamStats').innerHTML = teamStatsHTML;
         }
 
-        async function renderPlayerStats() {
-            if (!pgcrData || !pgcrData.entries) return;
-
-            const container = document.createElement('div');
-            container.className = 'player-rows-container';
-
-            const playerCards = await Promise.all(pgcrData.entries.map(async (entry, index) => {
-                let playerName = 'Unknown Player';
-                let playerClass = 'Unknown';
-                let emblemData = null;
-
-                if (entry.player && entry.player.destinyUserInfo) {
-                    playerName = entry.player.destinyUserInfo.bungieGlobalDisplayName || 
-                               entry.player.destinyUserInfo.displayName || 
-                               'Unknown Player';
-                }
-
-                if (entry.player && entry.player.characterClass) {
-                    const classHash = entry.player.characterClass;
-                    const classMap = {
-                        '671679327': 'Hunter',
-                        '2271682572': 'Warlock', 
-                        '3655393761': 'Titan'
-                    };
-                    playerClass = classMap[classHash] || 'Unknown';
-                }
-
-                // Get emblem data
-                if (entry.player && entry.player.emblemHash) {
-                    try {
-                        emblemData = await getEmblemDefinition(entry.player.emblemHash);
-                    } catch (error) {
-                        console.warn('Could not load emblem definition for player:', playerName, error);
-                    }
-                }
-
-                // Combine stats from both locations
-                const combinedStats = { ...entry.values };
-                if (entry.extended && entry.extended.values) {
-                    Object.keys(entry.extended.values).forEach(key => {
-                        combinedStats[key] = entry.extended.values[key];
-                    });
-                }
-
-                // Use real data from API - no hard-coding
-                // combinedStats already contains the real values from entry.values and entry.extended.values
-
-                const stats = [
-                    { key: 'kills', label: 'Kills' },
-                    { key: 'deaths', label: 'Deaths' },
-                    { key: 'assists', label: 'Assists' },
-                    { key: 'precisionKills', label: 'Precision' }
-                ];
-
-                const statsHTML = stats.map(stat => {
-                    const value = combinedStats[stat.key]?.basic?.value || 0;
-                    return `
-                        <div class="stat-box">
-                            <span class="stat-value">${value}</span>
-                            <span class="stat-label">${stat.label}</span>
-                        </div>
-                    `;
-                }).join('');
-
-                // Additional stat boxes (like activity-details.html)
-                const additionalStatBoxes = [
-                    { key: 'weaponKillsSuper', label: 'Super' },
-                    { key: 'weaponKillsGrenade', label: 'Grenade' },
-                    { key: 'weaponKillsMelee', label: 'Melee' },
-                    { key: 'score', label: 'Score' }
-                ];
-
-                const additionalStatBoxesHTML = additionalStatBoxes.map(stat => {
-                    let value = combinedStats[stat.key]?.basic?.value || 0;
-                    // Show N/A for score in raids
-                    const displayValue = (stat.key === 'score' && isRaidActivity) ? 'N/A' : value;
-                    return `
-                        <div class="stat-box">
-                            <span class="stat-value">${displayValue}</span>
-                            <span class="stat-label">${stat.label}</span>
-                        </div>
-                    `;
-                }).join('');
-
-                // Weapons section (match activity-details.html format)
-                let weaponsHTML = '<div style="text-align: center; color: #666; font-size: 0.8em;">No weapon data</div>';
-                let weaponCount = 0;
-                if (entry.extended && entry.extended.weapons && entry.extended.weapons.length > 0) {
-                    weaponCount = entry.extended.weapons.length;
-                    weaponsHTML = entry.extended.weapons.map(weapon => {
-                        const kills = weapon.values.uniqueWeaponKills?.basic?.value || 0;
-                        const precision = weapon.values.uniqueWeaponPrecisionKills?.basic?.value || 0;
-                        
-                        // Try to get weapon name from referenceId/itemHash
-                        const weaponHash = weapon.referenceId;
-                        
-                        return `
-                            <div class="weapon-item">
-                                <div class="weapon-icon">
-                                    <img src="https://www.bungie.net/common/destiny2_content/icons/weapons/auto_rifle.png" 
-                                         alt="Weapon" style="width: 100%; height: 100%; object-fit: cover;" 
-                                         onerror="this.style.display='none'; this.parentNode.innerHTML='🔫';">
-                                </div>
-                                <div class="weapon-info">
-                                    <div class="weapon-name">Weapon ${weaponHash || 'Unknown'}</div>
-                                    <div class="weapon-stats">Kills: ${kills} Precision: ${precision}</div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-
-                // Additional stats for tooltip and expanded view
-                const additionalStats = [
-                    { key: 'weaponKillsGrenade', label: 'Grenade Kills' },
-                    { key: 'weaponKillsMelee', label: 'Melee Kills' },
-                    { key: 'weaponKillsSuper', label: 'Super Kills' }
-                ];
-
-                const additionalStatsHTML = additionalStats.map(stat => {
-                    const value = combinedStats[stat.key]?.basic?.value || 0;
-                    return `
-                        <div class="additional-stat-item">
-                            <span>${stat.label}</span>
-                            <span>${value}</span>
-                        </div>
-                    `;
-                }).join('');
-
-                const additionalStatsTooltipHTML = additionalStats.map(stat => {
-                    const value = combinedStats[stat.key]?.basic?.value || 0;
-                    return `
-                        <div class="tooltip-stat-item">
-                            <span>${stat.label}</span>
-                            <span>${value}</span>
-                        </div>
-                    `;
-                }).join('');
-
-                // Create emblem HTML
-                let emblemHTML;
-                if (emblemData && emblemData.secondaryOverlay) {
-                    const emblemUrl = `https://www.bungie.net${emblemData.secondaryOverlay}`;
-                    const iconUrl = emblemData.secondaryIcon ? `https://www.bungie.net${emblemData.secondaryIcon}` : null;
-                    
-                    emblemHTML = `
-                        <div class="player-emblem" style="background-image: url('${emblemUrl}');">
-                            <div class="emblem-overlay"></div>
-                            ${iconUrl ? `<img src="${iconUrl}" class="emblem-icon" onerror="this.style.display='none';">` : ''}
-                            <div class="emblem-content">
-                                <div class="player-name">${playerName}</div>
-                                <div class="player-subtitle">Guardian</div>
-                            </div>
-                        </div>
-                    `;
-                } else {
-                    emblemHTML = `
-                        <div class="player-emblem">
-                            <div class="emblem-overlay"></div>
-                            <div class="emblem-content">
-                                <div class="player-name">${playerName}</div>
-                                <div class="player-subtitle">Guardian</div>
-                            </div>
-                        </div>
-                    `;
-                }
-
-                // Pre-cache build data for this player
-                if (!cachedBuildData[index]) {
-                    cachedBuildData[index] = generateMockBuildData({
-                        name: playerName,
-                        class: playerClass
-                    });
-                }
-
-                return `
-                    <div class="player-card" data-player-index="${index}">
-                        <div class="player-header">
-                            ${emblemHTML}
-                            <div class="player-class">${playerClass}</div>
-                        </div>
-                        
-                        <div class="stat-grid">
-                            ${statsHTML}
-                        </div>
-
-                        <div class="stat-grid">
-                            ${additionalStatBoxesHTML}
-                        </div>
-
-                        <div class="weapons-section">
-                            <div class="weapons-title">Weapons (${weaponCount})</div>
-                            ${weaponsHTML}
-                        </div>
-
-                        <div class="additional-stats-section">
-                            <div class="additional-stats-title" id="additional-stats-title-${index}">
-                                Additional Stats (${additionalStats.length})
-                            </div>
-                            <div class="additional-stats-tooltip" id="additional-stats-tooltip-${index}">
-                                ${additionalStatsTooltipHTML}
-                            </div>
-                            <div class="additional-stats-grid" id="additional-stats-grid-${index}">
-                                ${additionalStatsHTML}
-                            </div>
-                        </div>
-                    </div>
-                `;
-            }));
-
-            container.innerHTML = playerCards.join('');
-            document.getElementById('playerStats').innerHTML = '';
-            document.getElementById('playerStats').appendChild(container);
-            
-            // Add event listeners for additional stats interaction
-            setupAdditionalStatsListeners();
-            
-            // Add event listeners for player name hovers
-            setupPlayerNameHoverListeners();
-        }
-
-        function setupAdditionalStatsListeners() {
-            const titles = document.querySelectorAll('[id^="additional-stats-title-"]');
-            
-            titles.forEach(title => {
-                const playerIndex = parseInt(title.id.split('-')[3]);
-                
-                title.addEventListener('click', () => toggleAdditionalStats(playerIndex));
-                title.addEventListener('mouseenter', () => showAdditionalStatsTooltip(playerIndex));
-                title.addEventListener('mouseleave', () => hideAdditionalStatsTooltip(playerIndex));
-            });
-        }
-
         function toggleAdditionalStats(playerIndex) {
             const title = document.querySelector(`#additional-stats-title-${playerIndex}`);
             const grid = document.querySelector(`#additional-stats-grid-${playerIndex}`);
@@ -1509,11 +1368,13 @@
             expandedStates[playerIndex] = !isExpanded;
             
             if (expandedStates[playerIndex]) {
+                // Expand - show grid, hide tooltip, disable hover
                 grid.classList.add('expanded');
                 title.classList.add('expanded');
                 tooltip.classList.remove('visible');
                 title.setAttribute('data-hover-disabled', 'true');
             } else {
+                // Collapse - hide grid, enable hover
                 grid.classList.remove('expanded');
                 title.classList.remove('expanded');
                 title.removeAttribute('data-hover-disabled');
@@ -1524,6 +1385,7 @@
             const title = document.querySelector(`#additional-stats-title-${playerIndex}`);
             const tooltip = document.querySelector(`#additional-stats-tooltip-${playerIndex}`);
             
+            // Only show tooltip if not expanded (hover disabled)
             if (!title.hasAttribute('data-hover-disabled')) {
                 tooltip.classList.add('visible');
             }
@@ -1536,7 +1398,283 @@
             }
         }
 
-        // POPUP FUNCTIONALITY - SEPARATE FROM MAIN FUNCTIONALITY
+        async function renderPlayerStats() {
+            if (!pgcrData || !pgcrData.entries) return;
+
+            const players = pgcrData.entries;
+            const container = document.createElement('div');
+            container.className = 'player-rows-container';
+
+            // Create player cards directly in the grid container
+            const playerCards = await Promise.all(players.map(async (entry, playerIndex) => {
+                const player = entry.player;
+                const stats = entry.values || {};
+                const extendedStats = entry.extended?.values || {};
+                
+                // Get full profile data for proper emblem display (same as clan roster)
+                let playerName = player.destinyUserInfo?.displayName || 'Unknown Player';
+                let lightLevel = 'N/A';
+                let guardianRank = 'N/A';
+                let emblemBackgroundUrl = '';
+                let emblemIconUrl = '';
+                let characterClass = 'Unknown';
+                
+                try {
+                    const membershipType = player.destinyUserInfo.membershipType;
+                    const membershipId = player.destinyUserInfo.membershipId;
+                    
+                    // Get full profile data (same approach as clan roster)
+                    const profileEndpoint = `/Destiny2/${membershipType}/Profile/${membershipId}/?components=Profiles,Characters`;
+                    const profileData = await makeAPIRequest(profileEndpoint);
+                    
+                    if (profileData) {
+                        // Get player name from profile (bungieGlobalDisplayName preferred)
+                        if (profileData.profile?.data?.userInfo?.bungieGlobalDisplayName) {
+                            playerName = profileData.profile.data.userInfo.bungieGlobalDisplayName;
+                        }
+                        
+                        // Get guardian rank from profile
+                        if (profileData.profile?.data?.currentGuardianRank) {
+                            guardianRank = profileData.profile.data.currentGuardianRank;
+                        }
+                        
+                        // Get active character (most recently played)
+                        if (profileData.characters?.data) {
+                            let activeChar = null;
+                            let latestDate = new Date(0);
+                            
+                            Object.values(profileData.characters.data).forEach(char => {
+                                const charDate = new Date(char.dateLastPlayed);
+                                if (charDate > latestDate) {
+                                    latestDate = charDate;
+                                    activeChar = char;
+                                }
+                            });
+                            
+                            if (activeChar) {
+                                // Extract emblem data from active character
+                                lightLevel = activeChar.light || lightLevel;
+                                characterClass = getClassName(activeChar.classType);
+                                
+                                // Create emblem URLs from active character
+                                if (activeChar.emblemBackgroundPath) {
+                                    emblemBackgroundUrl = `https://www.bungie.net${activeChar.emblemBackgroundPath}`;
+                                }
+                                if (activeChar.emblemPath) {
+                                    emblemIconUrl = `https://www.bungie.net${activeChar.emblemPath}`;
+                                }
+                            }
+                        }
+                    }
+                    
+                    console.log('Player profile data:', {
+                        name: playerName,
+                        lightLevel,
+                        guardianRank,
+                        emblemBackgroundUrl,
+                        emblemIconUrl,
+                        characterClass
+                    });
+                    
+                } catch (error) {
+                    console.warn('Could not get profile data for player:', playerName, error);
+                    // Fallback to PGCR emblem data if profile fetch fails
+                    if (player.emblemBackgroundPath) {
+                        emblemBackgroundUrl = `https://www.bungie.net${player.emblemBackgroundPath}`;
+                    }
+                    if (player.emblemPath) {
+                        emblemIconUrl = `https://www.bungie.net${player.emblemPath}`;
+                    }
+                    characterClass = getClassName(entry.characterClass);
+                }
+                
+                // Pre-cache build data for this player - NEW
+                if (!cachedBuildData[playerIndex]) {
+                    cachedBuildData[playerIndex] = generateMockBuildData({
+                        name: playerName,
+                        class: characterClass
+                    });
+                }
+                
+                // Create emblem HTML with proper styling (same as clan roster)
+                const emblemHTML = `
+                    <div class="player-emblem">
+                        ${emblemBackgroundUrl ? `<img src="${emblemBackgroundUrl}" alt="Emblem Background" class="emblem-background" onerror="console.log('Failed to load emblem background:', this.src)" />` : ''}
+                        <div class="emblem-overlay"></div>
+                        <div class="emblem-content">
+                            <div class="player-name">${playerName}</div>
+                            <div class="player-light-level">Light ${lightLevel}</div>
+                        </div>
+                        ${emblemIconUrl ? `<img src="${emblemIconUrl}" alt="Emblem Icon" class="emblem-icon" onerror="console.log('Failed to load emblem icon:', this.src)" />` : ''}
+                        ${guardianRank !== 'N/A' ? `<div class="guardian-rank-badge">Rank ${guardianRank}</div>` : ''}
+                    </div>
+                `;
+                
+                // Combine stats from both locations
+                const allStats = { ...stats };
+                Object.keys(extendedStats).forEach(key => {
+                    allStats[key] = extendedStats[key];
+                });
+                
+                // Main stats in order: kills-deaths-assists-precision kills-super kills-grenade kills-melee kills-score
+                const mainStatsOrder = [
+                    { key: 'kills', label: 'Kills' },
+                    { key: 'deaths', label: 'Deaths' },
+                    { key: 'assists', label: 'Assists' },
+                    { key: 'precisionKills', label: 'Precision' },
+                    { key: 'weaponKillsSuper', label: 'Super' },
+                    { key: 'weaponKillsGrenade', label: 'Grenade' },
+                    { key: 'weaponKillsMelee', label: 'Melee' },
+                    { key: 'score', label: 'Score' }
+                ];
+
+                const mainStatsHTML = mainStatsOrder.map(statInfo => {
+                    const value = allStats[statInfo.key]?.basic?.value || 0;
+                    
+                    // Show N/A for score in raids
+                    const displayValue = (statInfo.key === 'score' && isRaidActivity) ? 'N/A' : 
+                                       (typeof value === 'number' ? value.toLocaleString() : value);
+                    
+                    return `
+                        <div class="stat-item">
+                            <span class="stat-value">${displayValue}</span>
+                            <span class="stat-label">${statInfo.label}</span>
+                        </div>
+                    `;
+                }).join('');
+
+                // Weapons section
+                let weaponsHTML = '';
+                if (entry.extended && entry.extended.weapons && entry.extended.weapons.length > 0) {
+                    const weaponStats = await Promise.all(entry.extended.weapons.map(async (weapon) => {
+                        const kills = weapon.values.uniqueWeaponKills ? weapon.values.uniqueWeaponKills.basic.value : 0;
+                        const precisionKills = weapon.values.uniqueWeaponPrecisionKills ? weapon.values.uniqueWeaponPrecisionKills.basic.value : 0;
+                        
+                        // Get weapon name and icon
+                        const weaponDef = await getWeaponDefinition(weapon.referenceId);
+                        const weaponName = weaponDef ? weaponDef.displayProperties.name : `Weapon ${weapon.referenceId}`;
+                        const weaponIcon = weaponDef && weaponDef.displayProperties.icon ? 
+                            `https://www.bungie.net${weaponDef.displayProperties.icon}` : 
+                            '';
+                        
+                        return `
+                            <div class="weapon-item">
+                                ${weaponIcon ? `<img src="${weaponIcon}" alt="${weaponName}" class="weapon-icon" />` : '<div class="weapon-icon"></div>'}
+                                <div class="weapon-info">
+                                    <span class="weapon-name">${weaponName}</span>
+                                    <div class="weapon-stats-row">Kills: ${kills} Precision: ${precisionKills}</div>
+                                </div>
+                            </div>
+                        `;
+                    }));
+                    
+                    weaponsHTML = `
+                        <div class="weapons-section">
+                            <div class="weapons-title">Weapons (${entry.extended.weapons.length})</div>
+                            <div class="weapon-stats">${weaponStats.join('')}</div>
+                        </div>
+                    `;
+                } else {
+                    weaponsHTML = `
+                        <div class="weapons-section">
+                            <div class="weapons-title">Weapons (0)</div>
+                            <div class="weapon-stats">No weapon data available</div>
+                        </div>
+                    `;
+                }
+
+                // Additional stats for interactive section - all other stats
+                const excludedStats = new Set(['kills', 'deaths', 'assists', 'precisionKills', 
+                                             'weaponKillsGrenade', 'weaponKillsMelee', 'weaponKillsSuper', 'score',
+                                             'activityDurationSeconds', 'completionReason', 'startSeconds']);
+                
+                const additionalStatsData = Object.keys(allStats)
+                    .filter(key => !excludedStats.has(key) && allStats[key] && allStats[key].basic)
+                    .map(statKey => {
+                        const value = allStats[statKey].basic.value;
+                        let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                        
+                        return {
+                            label: label,
+                            value: typeof value === 'number' ? value.toLocaleString() : value
+                        };
+                    });
+
+                const additionalStatsHTML = additionalStatsData.map(stat => `
+                    <div class="additional-stat-item">
+                        <span>${stat.label}</span>
+                        <span>${stat.value}</span>
+                    </div>
+                `).join('');
+
+                const tooltipStatsHTML = additionalStatsData.map(stat => `
+                    <div class="tooltip-stat-item">
+                        <span>${stat.label}</span>
+                        <span>${stat.value}</span>
+                    </div>
+                `).join('');
+
+                const additionalStatsSection = additionalStatsData.length > 0 ? `
+                    <div class="additional-stats-section">
+                        <div class="additional-stats-title" 
+                             id="additional-stats-title-${playerIndex}">
+                            Additional Stats (${additionalStatsData.length})
+                        </div>
+                        <div class="additional-stats-grid" id="additional-stats-grid-${playerIndex}">
+                            ${additionalStatsHTML}
+                        </div>
+                        <div class="additional-stats-tooltip" id="additional-stats-tooltip-${playerIndex}">
+                            ${tooltipStatsHTML}
+                        </div>
+                    </div>
+                ` : '';
+
+                return `
+                    <div class="player-card" data-player-index="${playerIndex}">
+                        <div class="player-header">
+                            ${emblemHTML}
+                            <div class="player-class">${characterClass}</div>
+                        </div>
+                        
+                        <div class="stat-grid">
+                            ${mainStatsHTML}
+                        </div>
+
+                        <div class="additional-sections">
+                            ${weaponsHTML}
+                            ${additionalStatsSection}
+                        </div>
+                    </div>
+                `;
+            }));
+
+            container.innerHTML = playerCards.join('');
+            document.getElementById('playerStats').innerHTML = '';
+            document.getElementById('playerStats').appendChild(container);
+            
+            // Add event listeners for additional stats interaction
+            setupAdditionalStatsListeners();
+            
+            // Add event listeners for player name hovers - NEW
+            setupPlayerNameHoverListeners();
+        }
+
+        function setupAdditionalStatsListeners() {
+            const titles = document.querySelectorAll('[id^="additional-stats-title-"]');
+            
+            titles.forEach(title => {
+                const playerIndex = parseInt(title.id.split('-')[3]);
+                
+                // Click event
+                title.addEventListener('click', () => toggleAdditionalStats(playerIndex));
+                
+                // Mouse events
+                title.addEventListener('mouseenter', () => showAdditionalStatsTooltip(playerIndex));
+                title.addEventListener('mouseleave', () => hideAdditionalStatsTooltip(playerIndex));
+            });
+        }
+
+        // NEW POPUP FUNCTIONALITY
         function setupPlayerNameHoverListeners() {
             const container = document.getElementById('playerStats');
             
@@ -1665,6 +1803,7 @@
             }
         }
 
+        // NEW - Debug functionality
         async function loadActivity() {
             const instanceId = document.getElementById('instanceIdInput').value.trim();
             
