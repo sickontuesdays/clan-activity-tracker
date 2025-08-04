@@ -1055,10 +1055,134 @@
     </div>
 
     <script>
-        // Global variables
+        // Global variables to match activity-details.html
+        let pgcrData = null;
+        let activityDefinition = null;
+        let activityInstanceId = null;
         let cachedBuildData = {}; // Cache build data for all players
         let expandedStates = {}; // Track which additional stats are expanded
         let currentPlayerData = null;
+
+        async function getPGCR(instanceId) {
+            try {
+                const response = await fetch(`/api/bungie?endpoint=/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.Response;
+            } catch (error) {
+                console.error('Error fetching PGCR:', error);
+                return null;
+            }
+        }
+
+        async function getActivityDefinition(activityHash) {
+            try {
+                const response = await fetch(`/api/bungie?endpoint=/Destiny2/Manifest/DestinyActivityDefinition/${activityHash}/`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.Response;
+            } catch (error) {
+                console.error('Error fetching activity definition:', error);
+                return null;
+            }
+        }
+
+        function renderActivityOverview() {
+            if (!pgcrData) return;
+
+            let activityName = 'Unknown Activity';
+            if (activityDefinition && activityDefinition.displayProperties) {
+                activityName = activityDefinition.displayProperties.name;
+            }
+
+            document.getElementById('activityName').textContent = activityName;
+            
+            let activityMode = 'Unknown Mode';
+            if (activityDefinition && activityDefinition.activityTypeHash) {
+                // Simple activity type mapping
+                const typeMap = {
+                    '2043403989': 'Raid',
+                    '608898761': 'Dungeon',
+                    '1164760504': 'Strike',
+                    '1686739444': 'Nightfall'
+                };
+                activityMode = typeMap[activityDefinition.activityTypeHash] || 'PvE Activity';
+            }
+            
+            document.getElementById('activityMode').textContent = activityMode;
+            
+            if (pgcrData.period) {
+                const date = new Date(pgcrData.period);
+                document.getElementById('activityDate').textContent = date.toLocaleString();
+            }
+            
+            if (pgcrData.activityDurationSeconds) {
+                const duration = Math.floor(pgcrData.activityDurationSeconds / 60);
+                document.getElementById('activityDuration').textContent = `${duration} minutes`;
+            }
+            
+            document.getElementById('activityStatus').textContent = pgcrData.activityWasStartedFromBeginning ? 'Complete' : 'Joined in Progress';
+            document.getElementById('playerCount').textContent = pgcrData.entries.length;
+            document.getElementById('instanceId').textContent = pgcrData.activityDetails.instanceId;
+            document.getElementById('activityHash').textContent = pgcrData.activityDetails.referenceId;
+        }
+
+        function renderTeamStats() {
+            if (!pgcrData || !pgcrData.entries) return;
+
+            const allStats = {};
+            let playerCount = 0;
+
+            pgcrData.entries.forEach(entry => {
+                if (entry.values || (entry.extended && entry.extended.values)) {
+                    playerCount++;
+                    
+                    // Combine stats from both locations
+                    const combinedStats = { ...entry.values };
+                    if (entry.extended && entry.extended.values) {
+                        Object.keys(entry.extended.values).forEach(key => {
+                            combinedStats[key] = entry.extended.values[key];
+                        });
+                    }
+                    
+                    Object.keys(combinedStats).forEach(statKey => {
+                        const stat = combinedStats[statKey];
+                        if (stat && stat.basic && typeof stat.basic.value === 'number') {
+                            if (!allStats[statKey]) {
+                                allStats[statKey] = { total: 0, count: 0 };
+                            }
+                            allStats[statKey].total += stat.basic.value;
+                            allStats[statKey].count++;
+                        }
+                    });
+                }
+            });
+
+            const statOrder = ['kills', 'deaths', 'assists', 'score'];
+            
+            const teamStatsHTML = statOrder
+                .filter(statKey => allStats[statKey])
+                .map(statKey => {
+                    const stat = allStats[statKey];
+                    const total = stat.total;
+                    const avg = stat.count > 0 ? (stat.total / stat.count).toFixed(1) : '0';
+                    
+                    let label = statKey.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+                    
+                    return `
+                        <div class="team-stat">
+                            <span class="team-stat-value">${total.toLocaleString()}</span>
+                            <span class="team-stat-label">${label} (${avg} avg)</span>
+                        </div>
+                    `;
+                }).join('');
+
+            document.getElementById('teamStats').innerHTML = teamStatsHTML;
+        }
 
         function showError(message) {
             const errorDiv = document.getElementById('error');
@@ -1076,11 +1200,9 @@
             document.getElementById('error').style.display = 'none';
         }
 
-        function showLoading(message) {
-            const loadingDiv = document.getElementById('loading');
-            loadingDiv.textContent = message;
-            loadingDiv.style.display = 'block';
-            
+        function showLoading(message = 'Loading...') {
+            document.getElementById('loading').textContent = message;
+            document.getElementById('loading').style.display = 'block';
             document.getElementById('content').style.display = 'none';
             hideError();
         }
@@ -1098,43 +1220,26 @@
                 return;
             }
 
-            showLoading('Loading activity data...');
-
-            try {
-                const response = await fetch(`/api/bungie?endpoint=/Destiny2/Stats/PostGameCarnageReport/${instanceId}/`);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-
-                const activityData = await response.json();
-                
-                if (!activityData.Response || !activityData.Response.entries) {
-                    throw new Error('Invalid activity data received');
-                }
-
-                hideLoading();
-                displayActivityData(activityData);
-                
-            } catch (error) {
-                console.error('Error loading activity:', error);
-                showError(`Failed to load activity: ${error.message}`);
-            }
+            activityInstanceId = instanceId;
+            await init();
         }
 
         function displayActivityData(activityData) {
+            // Store the data globally like activity-details.html does
+            pgcrData = activityData.Response;
+            
             // Update activity overview
             document.getElementById('activityName').textContent = 'Activity Details';
             document.getElementById('activityMode').textContent = 'Debug Mode';
             document.getElementById('activityDate').textContent = new Date().toLocaleDateString();
             document.getElementById('activityDuration').textContent = 'N/A';
             document.getElementById('activityStatus').textContent = 'Completed';
-            document.getElementById('playerCount').textContent = activityData.Response.entries.length;
-            document.getElementById('instanceId').textContent = activityData.Response.activityDetails.instanceId;
-            document.getElementById('activityHash').textContent = activityData.Response.activityDetails.referenceId;
+            document.getElementById('playerCount').textContent = pgcrData.entries.length;
+            document.getElementById('instanceId').textContent = pgcrData.activityDetails.instanceId;
+            document.getElementById('activityHash').textContent = pgcrData.activityDetails.referenceId;
 
             // Pre-cache build data for all players to eliminate popup delay
-            activityData.Response.entries.forEach((player, index) => {
+            pgcrData.entries.forEach((player, index) => {
                 if (!cachedBuildData[index]) {
                     cachedBuildData[index] = generateMockBuildData({
                         name: player.player.destinyUserInfo.bungieGlobalDisplayName || `Player ${index + 1}`,
@@ -1143,8 +1248,8 @@
                 }
             });
 
-            renderTeamStats(activityData.Response.entries);
-            renderPlayerStats(activityData.Response.entries);
+            renderTeamStats();
+            renderPlayerStats(); // Call without parameters like activity-details.html
         }
 
         function renderTeamStats(entries) {
@@ -1247,49 +1352,18 @@
             setupAdditionalStatsListeners();
         }
 
-        function renderWeapons(weapons) {
-            if (!weapons || weapons.length === 0) {
-                return '<div style="text-align: center; color: #666; font-size: 0.8em;">No weapon data</div>';
+        async function getEmblemDefinition(emblemHash) {
+            try {
+                const response = await fetch(`/api/bungie?endpoint=/Destiny2/Manifest/DestinyInventoryItemDefinition/${emblemHash}/`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                return data.Response;
+            } catch (error) {
+                console.error('Error fetching emblem definition:', error);
+                return null;
             }
-
-            return weapons.map(weapon => `
-                <div class="weapon-item">
-                    Kills: ${weapon.values.uniqueWeaponKills?.basic.value || 0} 
-                    Precision: ${weapon.values.uniqueWeaponPrecisionKills?.basic.value || 0}
-                </div>
-            `).join('');
-        }
-
-        function renderAdditionalStats(values) {
-            const additionalStats = [
-                { key: 'precisionKills', label: 'Precision Kills' },
-                { key: 'grenadeKills', label: 'Grenade Kills' },
-                { key: 'meleeKills', label: 'Melee Kills' },
-                { key: 'superKills', label: 'Super Kills' }
-            ];
-
-            return additionalStats.map(stat => `
-                <div class="additional-stat-item">
-                    <span>${stat.label}</span>
-                    <span>${values[stat.key]?.basic.value || 0}</span>
-                </div>
-            `).join('');
-        }
-
-        function renderAdditionalStatsTooltip(values) {
-            const additionalStats = [
-                { key: 'precisionKills', label: 'Precision Kills' },
-                { key: 'grenadeKills', label: 'Grenade Kills' },
-                { key: 'meleeKills', label: 'Melee Kills' },
-                { key: 'superKills', label: 'Super Kills' }
-            ];
-
-            return additionalStats.map(stat => `
-                <div class="tooltip-stat-item">
-                    <span>${stat.label}</span>
-                    <span>${values[stat.key]?.basic.value || 0}</span>
-                </div>
-            `).join('');
         }
 
         function setupPlayerNameHoverListeners() {
