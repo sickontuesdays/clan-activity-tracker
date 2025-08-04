@@ -19,7 +19,7 @@
         }
 
         .container {
-            max-width: 2000px;
+            max-width: 1800px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -203,8 +203,18 @@
             color: #aaa;
         }
 
-        .player-stats {
+        .player-stats-section {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #444;
+            border-radius: 10px;
+            padding: 20px;
             margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 1.5em;
+            color: #f7931e;
+            margin-bottom: 15px;
         }
 
         .player-rows-container {
@@ -222,7 +232,7 @@
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
-            min-height: 580px;
+            height: 600px;
         }
 
         .player-card:hover {
@@ -1194,11 +1204,7 @@
                 }
             });
 
-            // Hard-coded values for testing ability kills display
-            allStats['weaponKillsGrenade'] = { total: 25, count: 6 };
-            allStats['weaponKillsMelee'] = { total: 114, count: 6 };
-            allStats['weaponKillsSuper'] = { total: 18, count: 6 };
-
+            // Remove hard-coded values - use real data
             const statOrder = ['kills', 'deaths', 'assists', 'precisionKills', 'weaponKillsSuper', 'weaponKillsGrenade', 'weaponKillsMelee', 'score'];
             
             const teamStatsHTML = statOrder
@@ -1272,10 +1278,8 @@
                     });
                 }
 
-                // Hard-coded ability kill values for testing
-                combinedStats['weaponKillsGrenade'] = { basic: { value: Math.floor(Math.random() * 10) } };
-                combinedStats['weaponKillsMelee'] = { basic: { value: Math.floor(Math.random() * 20) + 10 } };
-                combinedStats['weaponKillsSuper'] = { basic: { value: Math.floor(Math.random() * 5) } };
+                // Use real data from API - no hard-coding
+                // combinedStats already contains the real values from entry.values and entry.extended.values
 
                 const stats = [
                     { key: 'kills', label: 'Kills' },
