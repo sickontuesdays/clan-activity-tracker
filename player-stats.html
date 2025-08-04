@@ -1426,52 +1426,19 @@
             overlay.classList.add('visible');
             popup.classList.add('visible');
             
-            // Add mouse leave handlers to hide popup when mouse leaves both card and popup
-            setupPopupMouseHandlers(playerIndex);
-        }
-
-        function setupPopupMouseHandlers(playerIndex) {
-            const playerCard = document.querySelector(`[data-player-index="${playerIndex}"]`);
-            const playerNameElement = playerCard ? playerCard.querySelector('.player-name') : null;
-            const popup = document.getElementById('buildPopup');
-            
-            if (!playerNameElement) {
-                console.warn('Player name element not found for index:', playerIndex);
-                return;
-            }
-            
-            let mouseInName = true;
-            let mouseInPopup = false;
-            
-            // Track mouse entering popup
-            popup.addEventListener('mouseenter', function() {
-                mouseInPopup = true;
-            });
-            
-            // Track mouse leaving popup
-            popup.addEventListener('mouseleave', function() {
-                mouseInPopup = false;
-                setTimeout(() => {
-                    if (!mouseInName && !mouseInPopup) {
-                        hideBuildPopup();
-                    }
-                }, 100);
-            });
-            
-            // Track mouse leaving player name
-            playerNameElement.addEventListener('mouseleave', function() {
-                mouseInName = false;
-                setTimeout(() => {
-                    if (!mouseInName && !mouseInPopup) {
-                        hideBuildPopup();
-                    }
-                }, 100);
-            });
-            
-            // Reset when mouse re-enters name
-            playerNameElement.addEventListener('mouseenter', function() {
-                mouseInName = true;
-            });
+            // Simple popup hide on mouse leave - no complex mouse tracking for now
+            setTimeout(() => {
+                const hideHandler = function() {
+                    const popupElement = document.getElementById('buildPopup');
+                    const overlayElement = document.getElementById('popupOverlay');
+                    
+                    popupElement.addEventListener('mouseleave', function() {
+                        overlayElement.classList.remove('visible');
+                        popupElement.classList.remove('visible');
+                    });
+                };
+                hideHandler();
+            }, 100);
         }
 
         function populateCachedBuildData(buildData) {
