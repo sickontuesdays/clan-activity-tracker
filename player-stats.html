@@ -560,15 +560,15 @@
             display: none;
         }
 
-        /* Build Popup Styles - NEW */
+        /* Enhanced Build Popup Styles - UPDATED */
         .build-popup {
             position: fixed;
-            top: 10%;
+            top: 5%;
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
             max-width: 1400px;
-            height: 80%;
+            height: 90%;
             background: linear-gradient(135deg, #1a1a2e, #16213e);
             border: 2px solid #f7931e;
             border-radius: 15px;
@@ -586,312 +586,292 @@
             background: rgba(0, 0, 0, 0.6);
             padding: 20px;
             border-bottom: 2px solid #f7931e;
-            text-align: center;
+            display: flex;
+            align-items: center;
         }
 
-        .build-header h2 {
+        .build-emblem {
+            position: relative;
+            width: 240px;
+            height: 54px;
+            border-radius: 4px;
+            overflow: hidden;
+            border: 1px solid #555;
+            display: flex;
+            align-items: center;
+            background: #000;
+            margin-right: 20px;
+        }
+
+        .build-emblem .emblem-background {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .build-emblem .emblem-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 70%, rgba(0,0,0,0.8) 100%);
+        }
+
+        .build-emblem .emblem-icon {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 42px;
+            height: 42px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            object-fit: cover;
+            z-index: 3;
+        }
+
+        .build-emblem .emblem-content {
+            position: relative;
+            z-index: 2;
+            padding: 8px 54px 8px 12px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .build-player-name {
             color: #f7931e;
-            font-size: 1.8em;
-            margin-bottom: 5px;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 2px;
         }
 
-        .build-header p {
+        .build-player-subtitle {
             color: #aaa;
-            font-size: 1.1em;
+            font-size: 0.9em;
         }
 
         .build-content {
             padding: 25px;
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr 2fr 1fr;
             gap: 30px;
             height: calc(100% - 100px);
         }
 
-        .subclass-section {
+        .abilities-section {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid #444;
             border-radius: 12px;
-            padding: 20px;
-        }
-
-        .subclass-header {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        .subclass-icon {
-            width: 60px;
-            height: 60px;
-            background: linear-gradient(45deg, #f7931e, #e6840e);
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            margin: 0 auto 10px;
-            border: 2px solid #f7931e;
-            transform: rotate(45deg);
-        }
-
-        .subclass-icon span {
-            transform: rotate(-45deg);
-            color: white;
-            font-weight: bold;
-        }
-
-        .subclass-name {
-            color: #f7931e;
-            font-size: 1.2em;
-            font-weight: bold;
-        }
-
-        .abilities-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-
-        .ability-item {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #555;
-            text-align: center;
-        }
-
-        .ability-icon {
-            width: 32px;
-            height: 32px;
-            background: rgba(247, 147, 30, 0.2);
-            border: 1px solid #f7931e;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 8px;
-            font-size: 16px;
-        }
-
-        .ability-name {
-            color: #f7931e;
-            font-size: 0.9em;
-            font-weight: bold;
-            margin-bottom: 4px;
-        }
-
-        .ability-description {
-            color: #ccc;
-            font-size: 0.8em;
-        }
-
-        .aspects-section, .fragments-section {
-            margin-bottom: 20px;
+            padding: 15px;
         }
 
         .section-header {
             color: #f7931e;
             font-size: 1.1em;
             font-weight: bold;
-            margin-bottom: 12px;
+            margin-bottom: 15px;
             text-align: center;
         }
 
-        .aspects-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-        }
-
-        .aspect-item {
+        .ability-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            padding: 8px;
             background: rgba(0, 0, 0, 0.4);
-            padding: 10px;
             border-radius: 6px;
             border: 1px solid #555;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
 
-        .aspect-icon {
-            width: 24px;
-            height: 24px;
-            background: rgba(247, 147, 30, 0.2);
-            border: 1px solid #f7931e;
-            border-radius: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            color: #f7931e;
+        .ability-icon {
+            width: 32px;
+            height: 32px;
+            margin-right: 10px;
+            border-radius: 4px;
+            border: 1px solid #666;
+            object-fit: cover;
         }
 
-        .aspect-name {
-            color: #ccc;
-            font-size: 0.8em;
+        .ability-name {
+            color: #fff;
+            font-size: 0.9em;
+            font-weight: bold;
         }
 
-        .fragments-grid {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .fragment-item {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid #555;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .fragment-icon {
-            width: 16px;
-            height: 16px;
-            background: rgba(147, 147, 147, 0.2);
-            border: 1px solid #999;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 8px;
-            color: #999;
-        }
-
-        .fragment-name {
-            color: #ccc;
-            font-size: 0.75em;
-        }
-
-        .armor-section {
+        .aspects-fragments-section {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid #444;
             border-radius: 12px;
             padding: 20px;
         }
 
-        .armor-stats {
+        .aspects-row, .fragments-row, .artifact-mods-row {
             margin-bottom: 20px;
         }
 
-        .stats-grid {
+        .aspects-grid, .fragments-grid, .artifact-mods-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(70px, 1fr));
+            gap: 10px;
         }
 
-        .stat-item-large {
-            background: rgba(0, 0, 0, 0.4);
+        .aspect-item, .fragment-item, .artifact-mod-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
             padding: 10px;
-            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.4);
             border: 1px solid #555;
+            border-radius: 8px;
             text-align: center;
         }
 
-        .stat-name {
-            color: #aaa;
-            font-size: 0.8em;
-            margin-bottom: 4px;
+        .aspect-icon, .fragment-icon, .artifact-mod-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 4px;
+            border: 1px solid #666;
+            margin-bottom: 5px;
+            object-fit: cover;
         }
 
-        .stat-value-large {
-            color: #f7931e;
-            font-size: 1.2em;
-            font-weight: bold;
+        .aspect-name, .fragment-name, .artifact-mod-name {
+            color: #fff;
+            font-size: 0.75em;
+            line-height: 1.2;
+            text-align: center;
         }
 
-        .armor-pieces {
+        .stats-section {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .stats-list {
             display: flex;
             flex-direction: column;
             gap: 8px;
         }
 
-        .armor-piece {
-            background: rgba(0, 0, 0, 0.4);
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #555;
+        .stat-row {
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 12px;
+            padding: 8px 12px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #555;
+            border-radius: 6px;
         }
 
-        .armor-piece.exotic {
-            border-color: #f7931e;
-            background: rgba(247, 147, 30, 0.1);
+        .stat-name {
+            color: #aaa;
+            font-size: 0.9em;
+        }
+
+        .stat-value-large {
+            color: #fff;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .stat-total {
+            border-top: 2px solid #f7931e;
+            margin-top: 10px;
+            padding-top: 10px;
+            background: rgba(247, 147, 30, 0.1) !important;
+        }
+
+        .stat-total .stat-name {
+            color: #f7931e;
+            font-weight: bold;
+        }
+
+        .stat-total .stat-value-large {
+            color: #f7931e;
+            font-size: 1.3em;
+        }
+
+        .armor-section {
+            grid-column: 1 / -1;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid #444;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .armor-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+        }
+
+        .armor-piece {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 15px;
+            text-align: center;
         }
 
         .armor-piece-icon {
-            width: 40px;
-            height: 40px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #666;
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 10px;
             border-radius: 6px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-            flex-shrink: 0;
-        }
-
-        .armor-piece-icon.exotic {
-            background: rgba(247, 147, 30, 0.2);
-            border-color: #f7931e;
-            color: #f7931e;
-        }
-
-        .armor-piece-icon.no-exotic {
-            border-color: #ff4444;
-            background: rgba(255, 68, 68, 0.1);
-            position: relative;
-        }
-
-        .armor-piece-icon.no-exotic::after {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 10%;
-            right: 10%;
-            height: 2px;
-            background: #ff4444;
-            transform: translateY(-50%) rotate(45deg);
-        }
-
-        .armor-piece-info {
-            flex: 1;
+            border: 1px solid #666;
+            object-fit: cover;
         }
 
         .armor-piece-name {
             color: #fff;
             font-weight: bold;
-            margin-bottom: 4px;
-        }
-
-        .armor-piece-name.exotic {
-            color: #f7931e;
-        }
-
-        .armor-piece-mods {
-            display: flex;
-            gap: 4px;
-            flex-wrap: wrap;
-        }
-
-        .mod-icon {
-            width: 20px;
-            height: 20px;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid #666;
-            border-radius: 2px;
-        }
-
-        .no-exotic-indicator {
-            color: #ff4444;
+            margin-bottom: 8px;
             font-size: 0.9em;
-            font-style: italic;
+            line-height: 1.2;
+        }
+
+        .armor-piece-type {
+            color: #aaa;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .armor-mods {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .armor-mod {
+            display: flex;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #666;
+            border-radius: 3px;
+            padding: 2px 4px;
+        }
+
+        .armor-mod-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 4px;
+            border-radius: 2px;
+            object-fit: cover;
+        }
+
+        .armor-mod-name {
+            color: #ccc;
+            font-size: 0.7em;
+            white-space: nowrap;
         }
 
         .popup-overlay {
@@ -900,7 +880,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.7);
             z-index: 1999;
             display: none;
         }
@@ -938,10 +918,10 @@
             }
             
             .build-popup {
-                top: 5%;
-                left: 5%;
-                width: 90%;
-                height: 90%;
+                top: 2%;
+                left: 2%;
+                width: 96%;
+                height: 96%;
                 transform: translateX(0);
             }
         }
@@ -1018,97 +998,55 @@
             </div>
         </div>
 
-        <!-- Build Popup - NEW -->
+        <!-- Enhanced Build Popup - UPDATED -->
         <div class="popup-overlay" id="popupOverlay">
             <div class="build-popup" id="buildPopup">
-                <div class="build-header">
-                    <h2 id="buildPlayerName">Player Name</h2>
-                    <p id="buildPlayerClass">Class</p>
+                <div class="build-header" id="buildHeader">
+                    <!-- Player emblem and info will be populated here -->
                 </div>
                 <div class="build-content">
-                    <div class="subclass-section">
-                        <div class="subclass-header">
-                            <div class="subclass-icon">
-                                <span>◊</span>
-                            </div>
-                            <div class="subclass-name" id="subclassName">Prismatic Warlock</div>
+                    <div class="abilities-section">
+                        <div class="section-header">Abilities</div>
+                        <div id="abilitiesList">
+                            <!-- Abilities will be populated here -->
                         </div>
-                        
-                        <div class="abilities-grid">
-                            <div class="ability-item">
-                                <div class="ability-icon">💥</div>
-                                <div class="ability-name">Grenade</div>
-                                <div class="ability-description" id="grenadeAbility">Pulse Grenade</div>
-                            </div>
-                            <div class="ability-item">
-                                <div class="ability-icon">👊</div>
-                                <div class="ability-name">Melee</div>
-                                <div class="ability-description" id="meleeAbility">Pocket Singularity</div>
-                            </div>
-                            <div class="ability-item">
-                                <div class="ability-icon">🚀</div>
-                                <div class="ability-name">Movement</div>
-                                <div class="ability-description" id="movementAbility">Burst Glide</div>
-                            </div>
-                            <div class="ability-item">
-                                <div class="ability-icon">🛡️</div>
-                                <div class="ability-name">Class Ability</div>
-                                <div class="ability-description" id="classAbilityName">Healing Rift</div>
-                            </div>
-                        </div>
-
-                        <div class="aspects-section">
+                    </div>
+                    
+                    <div class="aspects-fragments-section">
+                        <div class="aspects-row">
                             <div class="section-header">Aspects</div>
                             <div class="aspects-grid" id="aspectsList">
                                 <!-- Aspects will be populated here -->
                             </div>
                         </div>
-
-                        <div class="fragments-section">
+                        
+                        <div class="fragments-row">
                             <div class="section-header">Fragments</div>
                             <div class="fragments-grid" id="fragmentsList">
                                 <!-- Fragments will be populated here -->
                             </div>
                         </div>
+                        
+                        <div class="artifact-mods-row">
+                            <div class="section-header">Artifact Mods</div>
+                            <div class="artifact-mods-grid" id="artifactModsList">
+                                <!-- Artifact mods will be populated here -->
+                            </div>
+                        </div>
                     </div>
-
-                    <div class="armor-section">
-                        <div class="armor-stats">
-                            <div class="section-header">Total Stats</div>
-                            <div class="stats-grid">
-                                <div class="stat-item-large">
-                                    <div class="stat-name">Mobility</div>
-                                    <div class="stat-value-large" id="totalMobility">42</div>
-                                </div>
-                                <div class="stat-item-large">
-                                    <div class="stat-name">Resilience</div>
-                                    <div class="stat-value-large" id="totalResilience">68</div>
-                                </div>
-                                <div class="stat-item-large">
-                                    <div class="stat-name">Recovery</div>
-                                    <div class="stat-value-large" id="totalRecovery">72</div>
-                                </div>
-                                <div class="stat-item-large">
-                                    <div class="stat-name">Discipline</div>
-                                    <div class="stat-value-large" id="totalDiscipline">58</div>
-                                </div>
-                                <div class="stat-item-large">
-                                    <div class="stat-name">Intellect</div>
-                                    <div class="stat-value-large" id="totalIntellect">45</div>
-                                </div>
-                                <div class="stat-item-large">
-                                    <div class="stat-name">Strength</div>
-                                    <div class="stat-value-large" id="totalStrength">39</div>
-                                </div>
-                            </div>
+                    
+                    <div class="stats-section">
+                        <div class="section-header">Stats</div>
+                        <div class="stats-list" id="statsList">
+                            <!-- Stats will be populated here -->
                         </div>
-
-                        <div class="armor-pieces">
-                            <div class="section-header">Armor</div>
-                            <div id="armorList">
-                                <!-- Armor pieces will be populated here -->
-                            </div>
-                        </div>
+                    </div>
+                </div>
+                
+                <div class="armor-section">
+                    <div class="section-header">Armor</div>
+                    <div class="armor-grid" id="armorList">
+                        <!-- Armor pieces will be populated here -->
                     </div>
                 </div>
             </div>
@@ -1116,7 +1054,7 @@
     </div>
 
     <script>
-        // EXACT COPY of activity-details.html JavaScript with popup functionality added
+        // EXACT COPY of activity-details.html JavaScript with enhanced popup functionality
         let activityInstanceId = null;
         let pgcrData = null;
         let activityDefinition = null;
@@ -1125,7 +1063,7 @@
         let expandedStates = {};
         let isRaidActivity = false;
 
-        // Popup-specific variables - NEW
+        // Enhanced popup-specific variables
         let cachedBuildData = {};
         let currentPlayerData = null;
 
@@ -1405,6 +1343,20 @@
             const container = document.createElement('div');
             container.className = 'player-rows-container';
 
+            // Pre-cache build data for all players when activity loads
+            players.forEach((entry, playerIndex) => {
+                const player = entry.player;
+                const playerName = player.destinyUserInfo?.displayName || 'Unknown Player';
+                const characterClass = getClassName(entry.characterClass);
+                
+                if (!cachedBuildData[playerIndex]) {
+                    cachedBuildData[playerIndex] = generateEnhancedBuildData({
+                        name: playerName,
+                        class: characterClass
+                    });
+                }
+            });
+
             // Create player cards directly in the grid container
             const playerCards = await Promise.all(players.map(async (entry, playerIndex) => {
                 const player = entry.player;
@@ -1488,13 +1440,13 @@
                     characterClass = getClassName(entry.characterClass);
                 }
                 
-                // Pre-cache build data for this player - NEW
-                if (!cachedBuildData[playerIndex]) {
-                    cachedBuildData[playerIndex] = generateMockBuildData({
-                        name: playerName,
-                        class: characterClass
-                    });
-                }
+                // Store emblem data for popup use
+                cachedBuildData[playerIndex].emblemData = {
+                    backgroundUrl: emblemBackgroundUrl,
+                    iconUrl: emblemIconUrl,
+                    lightLevel: lightLevel,
+                    guardianRank: guardianRank
+                };
                 
                 // Create emblem HTML with proper styling (same as clan roster)
                 const emblemHTML = `
@@ -1655,7 +1607,7 @@
             // Add event listeners for additional stats interaction
             setupAdditionalStatsListeners();
             
-            // Add event listeners for player name hovers - NEW
+            // Add event listeners for player name hovers
             setupPlayerNameHoverListeners();
         }
 
@@ -1674,7 +1626,7 @@
             });
         }
 
-        // NEW POPUP FUNCTIONALITY
+        // Enhanced popup functionality
         function setupPlayerNameHoverListeners() {
             const container = document.getElementById('playerStats');
             
@@ -1684,7 +1636,7 @@
                     const playerIndex = parseInt(playerCard.getAttribute('data-player-index'));
                     const playerName = e.target.textContent;
                     
-                    showBuildPopup({
+                    showEnhancedBuildPopup({
                         name: playerName,
                         class: 'Guardian'
                     }, playerIndex);
@@ -1692,97 +1644,291 @@
             });
         }
 
-        function generateMockBuildData(playerData) {
+        function generateEnhancedBuildData(playerData) {
             const nameHash = playerData.name.split('').reduce((a, b) => a + b.charCodeAt(0), 0);
-            const hasExotic = nameHash % 3 === 0;
+            const random = (max) => Math.abs(nameHash * (max + 1)) % max;
+            const classes = ['Hunter', 'Titan', 'Warlock'];
+            const playerClass = classes[Math.abs(nameHash) % classes.length];
+            
+            // Bungie API icon base URLs (using placeholder icons for now)
+            const iconBase = 'https://www.bungie.net/common/destiny2_content/icons/';
+            
+            // Mock subclass data based on class
+            const subclassData = {
+                'Hunter': {
+                    supers: [
+                        { name: 'Shadowshot', icon: 'https://via.placeholder.com/32x32/663399/fff?text=SS' },
+                        { name: 'Golden Gun', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=GG' },
+                        { name: 'Arc Staff', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=AS' }
+                    ],
+                    grenades: [
+                        { name: 'Voidwall Grenade', icon: 'https://via.placeholder.com/32x32/663399/fff?text=VG' },
+                        { name: 'Tripmine Grenade', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=TG' },
+                        { name: 'Arcbolt Grenade', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=AG' }
+                    ],
+                    melees: [
+                        { name: 'Smoke Bomb', icon: 'https://via.placeholder.com/32x32/663399/fff?text=SB' },
+                        { name: 'Throwing Knife', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=TK' },
+                        { name: 'Combination Blow', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=CB' }
+                    ],
+                    classAbilities: [
+                        { name: 'Marksman\'s Dodge', icon: 'https://via.placeholder.com/32x32/aaa/fff?text=MD' },
+                        { name: 'Gambler\'s Dodge', icon: 'https://via.placeholder.com/32x32/aaa/fff?text=GD' }
+                    ],
+                    movement: [
+                        { name: 'High Jump', icon: 'https://via.placeholder.com/32x32/888/fff?text=HJ' },
+                        { name: 'Strafe Jump', icon: 'https://via.placeholder.com/32x32/888/fff?text=SJ' },
+                        { name: 'Triple Jump', icon: 'https://via.placeholder.com/32x32/888/fff?text=TJ' }
+                    ]
+                },
+                'Titan': {
+                    supers: [
+                        { name: 'Ward of Dawn', icon: 'https://via.placeholder.com/32x32/663399/fff?text=WD' },
+                        { name: 'Hammer of Sol', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=HS' },
+                        { name: 'Fist of Havoc', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=FH' }
+                    ],
+                    grenades: [
+                        { name: 'Magnetic Grenade', icon: 'https://via.placeholder.com/32x32/663399/fff?text=MG' },
+                        { name: 'Thermite Grenade', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=TG' },
+                        { name: 'Flashbang Grenade', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=FG' }
+                    ],
+                    melees: [
+                        { name: 'Shield Bash', icon: 'https://via.placeholder.com/32x32/663399/fff?text=SB' },
+                        { name: 'Hammer Strike', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=HS' },
+                        { name: 'Seismic Strike', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=SS' }
+                    ],
+                    classAbilities: [
+                        { name: 'Towering Barricade', icon: 'https://via.placeholder.com/32x32/aaa/fff?text=TB' },
+                        { name: 'Rally Barricade', icon: 'https://via.placeholder.com/32x32/aaa/fff?text=RB' }
+                    ],
+                    movement: [
+                        { name: 'High Lift', icon: 'https://via.placeholder.com/32x32/888/fff?text=HL' },
+                        { name: 'Strafe Lift', icon: 'https://via.placeholder.com/32x32/888/fff?text=SL' },
+                        { name: 'Catapult Lift', icon: 'https://via.placeholder.com/32x32/888/fff?text=CL' }
+                    ]
+                },
+                'Warlock': {
+                    supers: [
+                        { name: 'Nova Bomb', icon: 'https://via.placeholder.com/32x32/663399/fff?text=NB' },
+                        { name: 'Daybreak', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=DB' },
+                        { name: 'Chaos Reach', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=CR' }
+                    ],
+                    grenades: [
+                        { name: 'Vortex Grenade', icon: 'https://via.placeholder.com/32x32/663399/fff?text=VG' },
+                        { name: 'Solar Grenade', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=SG' },
+                        { name: 'Storm Grenade', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=SG' }
+                    ],
+                    melees: [
+                        { name: 'Atomic Breach', icon: 'https://via.placeholder.com/32x32/663399/fff?text=AB' },
+                        { name: 'Celestial Fire', icon: 'https://via.placeholder.com/32x32/ff6600/fff?text=CF' },
+                        { name: 'Chain Lightning', icon: 'https://via.placeholder.com/32x32/0099ff/fff?text=CL' }
+                    ],
+                    classAbilities: [
+                        { name: 'Healing Rift', icon: 'https://via.placeholder.com/32x32/aaa/fff?text=HR' },
+                        { name: 'Empowering Rift', icon: 'https://via.placeholder.com/32x32/aaa/fff?text=ER' }
+                    ],
+                    movement: [
+                        { name: 'Glide', icon: 'https://via.placeholder.com/32x32/888/fff?text=G' },
+                        { name: 'Burst Glide', icon: 'https://via.placeholder.com/32x32/888/fff?text=BG' },
+                        { name: 'Strafe Glide', icon: 'https://via.placeholder.com/32x32/888/fff?text=SG' }
+                    ]
+                }
+            };
+            
+            const classData = subclassData[playerClass];
+            
+            // Generate aspects and fragments
+            const aspects = [
+                { name: 'Vanishing Step', icon: 'https://via.placeholder.com/48x48/663399/fff?text=VS' },
+                { name: 'Stylish Executioner', icon: 'https://via.placeholder.com/48x48/663399/fff?text=SE' }
+            ];
+            
+            const fragments = [
+                { name: 'Echo of Starvation', icon: 'https://via.placeholder.com/48x48/663399/fff?text=ES' },
+                { name: 'Echo of Instability', icon: 'https://via.placeholder.com/48x48/663399/fff?text=EI' },
+                { name: 'Echo of Remnants', icon: 'https://via.placeholder.com/48x48/663399/fff?text=ER' },
+                { name: 'Echo of Leeching', icon: 'https://via.placeholder.com/48x48/663399/fff?text=EL' }
+            ];
+            
+            // Generate artifact mods
+            const artifactMods = [
+                { name: 'Surge Detonators', icon: 'https://via.placeholder.com/48x48/ff6600/fff?text=SD' },
+                { name: 'Overload Auto Rifle', icon: 'https://via.placeholder.com/48x48/ff6600/fff?text=OAR' },
+                { name: 'Anti-Barrier Scout', icon: 'https://via.placeholder.com/48x48/ff6600/fff?text=ABS' },
+                { name: 'Unstoppable HC', icon: 'https://via.placeholder.com/48x48/ff6600/fff?text=UHC' }
+            ].slice(0, 3 + random(2)); // 3-4 artifact mods
+            
+            // Generate armor with mods
+            const armorTypes = ['Helmet', 'Gauntlets', 'Chest Armor', 'Leg Armor', 'Class Item'];
+            const armor = armorTypes.map((type, index) => {
+                const armorMods = [
+                    { name: 'Powerful Friends', icon: 'https://via.placeholder.com/16x16/0099ff/fff?text=PF' },
+                    { name: 'Radiant Light', icon: 'https://via.placeholder.com/16x16/ff6600/fff?text=RL' },
+                    { name: 'Taking Charge', icon: 'https://via.placeholder.com/16x16/663399/fff?text=TC' },
+                    { name: 'High Energy Fire', icon: 'https://via.placeholder.com/16x16/ff0000/fff?text=HEF' }
+                ].slice(0, 1 + random(3)); // 1-3 mods per piece
+                
+                return {
+                    name: `${playerClass} ${type}`,
+                    type: type,
+                    icon: `https://via.placeholder.com/64x64/333/fff?text=${type.charAt(0)}`,
+                    mods: armorMods
+                };
+            });
+            
+            // Generate stats
+            const baseStats = [60, 70, 80, 90, 100];
+            const stats = {
+                mobility: baseStats[random(baseStats.length)],
+                resilience: baseStats[random(baseStats.length)],
+                recovery: baseStats[random(baseStats.length)],
+                discipline: baseStats[random(baseStats.length)],
+                intellect: baseStats[random(baseStats.length)],
+                strength: baseStats[random(baseStats.length)]
+            };
+            stats.total = stats.mobility + stats.resilience + stats.recovery + stats.discipline + stats.intellect + stats.strength;
             
             return {
-                armor: [
-                    { name: hasExotic ? 'Nezarec\'s Sin' : 'Legendary Helmet', type: 'Helmet', isExotic: hasExotic },
-                    { name: 'Legendary Gauntlets', type: 'Gauntlets', isExotic: false },
-                    { name: 'Legendary Chest', type: 'Chest', isExotic: false },
-                    { name: 'Legendary Legs', type: 'Legs', isExotic: false },
-                    { name: 'Class Item', type: 'Class Item', isExotic: false }
-                ],
-                subclass: nameHash % 2 === 0 ? 'Prismatic Warlock' : 'Voidwalker',
-                abilities: {
-                    grenade: nameHash % 2 === 0 ? 'Pulse Grenade' : 'Vortex Grenade',
-                    melee: 'Pocket Singularity',
-                    movement: 'Burst Glide',
-                    classAbility: 'Healing Rift'
-                },
-                aspects: ['Chaos Accelerant', 'Child of the Old Gods'],
-                fragments: ['Echo of Expulsion', 'Echo of Undermining', 'Echo of Instability'],
-                stats: {
-                    mobility: 42 + (nameHash % 20),
-                    resilience: 68 + (nameHash % 15),
-                    recovery: 72 + (nameHash % 18),
-                    discipline: 58 + (nameHash % 22),
-                    intellect: 45 + (nameHash % 25),
-                    strength: 39 + (nameHash % 16)
-                }
+                class: playerClass,
+                super: classData.supers[random(classData.supers.length)],
+                grenade: classData.grenades[random(classData.grenades.length)],
+                melee: classData.melees[random(classData.melees.length)],
+                classAbility: classData.classAbilities[random(classData.classAbilities.length)],
+                movement: classData.movement[random(classData.movement.length)],
+                aspects: aspects,
+                fragments: fragments,
+                artifactMods: artifactMods,
+                armor: armor,
+                stats: stats
             };
         }
 
-        function showBuildPopup(playerData, playerIndex) {
+        function showEnhancedBuildPopup(playerData, playerIndex) {
             currentPlayerData = playerData;
             
-            document.getElementById('buildPlayerName').textContent = playerData.name;
-            document.getElementById('buildPlayerClass').textContent = playerData.class || 'Guardian';
+            const buildData = cachedBuildData[playerIndex];
+            if (!buildData) return;
             
-            if (cachedBuildData[playerIndex]) {
-                populateBuildData(cachedBuildData[playerIndex]);
-            } else {
-                cachedBuildData[playerIndex] = generateMockBuildData(playerData);
-                populateBuildData(cachedBuildData[playerIndex]);
-            }
+            // Populate header with emblem and player info
+            const emblemData = buildData.emblemData || {};
+            const headerHTML = `
+                <div class="build-emblem">
+                    ${emblemData.backgroundUrl ? `<img src="${emblemData.backgroundUrl}" alt="Emblem Background" class="emblem-background" />` : ''}
+                    <div class="emblem-overlay"></div>
+                    <div class="emblem-content">
+                        <div class="build-player-name">${playerData.name}</div>
+                        <div class="build-player-subtitle">Light ${emblemData.lightLevel || 'N/A'} • ${buildData.class}</div>
+                    </div>
+                    ${emblemData.iconUrl ? `<img src="${emblemData.iconUrl}" alt="Emblem Icon" class="emblem-icon" />` : ''}
+                </div>
+            `;
+            document.getElementById('buildHeader').innerHTML = headerHTML;
             
-            document.getElementById('popupOverlay').classList.add('visible');
-            document.getElementById('buildPopup').classList.add('visible');
-        }
-
-        function populateBuildData(buildData) {
-            document.getElementById('totalMobility').textContent = buildData.stats.mobility;
-            document.getElementById('totalResilience').textContent = buildData.stats.resilience;
-            document.getElementById('totalRecovery').textContent = buildData.stats.recovery;
-            document.getElementById('totalDiscipline').textContent = buildData.stats.discipline;
-            document.getElementById('totalIntellect').textContent = buildData.stats.intellect;
-            document.getElementById('totalStrength').textContent = buildData.stats.strength;
-
-            document.getElementById('subclassName').textContent = buildData.subclass;
-            document.getElementById('grenadeAbility').textContent = buildData.abilities.grenade;
-            document.getElementById('meleeAbility').textContent = buildData.abilities.melee;
-            document.getElementById('movementAbility').textContent = buildData.abilities.movement;
-            document.getElementById('classAbilityName').textContent = buildData.abilities.classAbility;
-
+            // Populate abilities (without labels, just equipped abilities)
+            const abilitiesHTML = `
+                <div class="ability-item">
+                    <img src="${buildData.super.icon}" alt="Super" class="ability-icon" />
+                    <span class="ability-name">${buildData.super.name}</span>
+                </div>
+                <div class="ability-item">
+                    <img src="${buildData.grenade.icon}" alt="Grenade" class="ability-icon" />
+                    <span class="ability-name">${buildData.grenade.name}</span>
+                </div>
+                <div class="ability-item">
+                    <img src="${buildData.melee.icon}" alt="Melee" class="ability-icon" />
+                    <span class="ability-name">${buildData.melee.name}</span>
+                </div>
+                <div class="ability-item">
+                    <img src="${buildData.classAbility.icon}" alt="Class Ability" class="ability-icon" />
+                    <span class="ability-name">${buildData.classAbility.name}</span>
+                </div>
+                <div class="ability-item">
+                    <img src="${buildData.movement.icon}" alt="Movement" class="ability-icon" />
+                    <span class="ability-name">${buildData.movement.name}</span>
+                </div>
+            `;
+            document.getElementById('abilitiesList').innerHTML = abilitiesHTML;
+            
+            // Populate aspects
             const aspectsHTML = buildData.aspects.map(aspect => `
                 <div class="aspect-item">
-                    <div class="aspect-icon">◊</div>
-                    <div class="aspect-name">${aspect}</div>
+                    <img src="${aspect.icon}" alt="${aspect.name}" class="aspect-icon" />
+                    <div class="aspect-name">${aspect.name}</div>
                 </div>
             `).join('');
             document.getElementById('aspectsList').innerHTML = aspectsHTML;
-
+            
+            // Populate fragments
             const fragmentsHTML = buildData.fragments.map(fragment => `
                 <div class="fragment-item">
-                    <div class="fragment-icon">◦</div>
-                    <div class="fragment-name">${fragment}</div>
+                    <img src="${fragment.icon}" alt="${fragment.name}" class="fragment-icon" />
+                    <div class="fragment-name">${fragment.name}</div>
                 </div>
             `).join('');
             document.getElementById('fragmentsList').innerHTML = fragmentsHTML;
-
+            
+            // Populate artifact mods (show just icon if name too long)
+            const artifactModsHTML = buildData.artifactMods.map(mod => `
+                <div class="artifact-mod-item">
+                    <img src="${mod.icon}" alt="${mod.name}" class="artifact-mod-icon" />
+                    ${mod.name.length > 15 ? '' : `<div class="artifact-mod-name">${mod.name}</div>`}
+                </div>
+            `).join('');
+            document.getElementById('artifactModsList').innerHTML = artifactModsHTML;
+            
+            // Populate stats as list with total
+            const statsHTML = `
+                <div class="stat-row">
+                    <span class="stat-name">Mobility</span>
+                    <span class="stat-value-large">${buildData.stats.mobility}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Resilience</span>
+                    <span class="stat-value-large">${buildData.stats.resilience}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Recovery</span>
+                    <span class="stat-value-large">${buildData.stats.recovery}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Discipline</span>
+                    <span class="stat-value-large">${buildData.stats.discipline}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Intellect</span>
+                    <span class="stat-value-large">${buildData.stats.intellect}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-name">Strength</span>
+                    <span class="stat-value-large">${buildData.stats.strength}</span>
+                </div>
+                <div class="stat-row stat-total">
+                    <span class="stat-name">Total</span>
+                    <span class="stat-value-large">${buildData.stats.total}</span>
+                </div>
+            `;
+            document.getElementById('statsList').innerHTML = statsHTML;
+            
+            // Populate armor with mods
             const armorHTML = buildData.armor.map(piece => `
-                <div class="armor-piece ${piece.isExotic ? 'exotic' : ''}">
-                    <div class="armor-piece-icon ${piece.isExotic ? 'exotic' : (piece.name.includes('No Exotic') ? 'no-exotic' : '')}">
-                        ${piece.isExotic ? '⚡' : (piece.name.includes('No Exotic') ? '🚫' : '🛡️')}
-                    </div>
-                    <div class="armor-piece-info">
-                        <div class="armor-piece-name ${piece.isExotic ? 'exotic' : ''}">${piece.name}</div>
-                        ${piece.name.includes('No Exotic') ? '<div class="no-exotic-indicator">No exotic equipped in this slot</div>' : '<div class="armor-piece-mods"><div class="mod-icon"></div><div class="mod-icon"></div></div>'}
+                <div class="armor-piece">
+                    <img src="${piece.icon}" alt="${piece.name}" class="armor-piece-icon" />
+                    <div class="armor-piece-name">${piece.name}</div>
+                    <div class="armor-piece-type">${piece.type}</div>
+                    <div class="armor-mods">
+                        ${piece.mods.map(mod => `
+                            <div class="armor-mod">
+                                <img src="${mod.icon}" alt="${mod.name}" class="armor-mod-icon" />
+                                <span class="armor-mod-name">${mod.name}</span>
+                            </div>
+                        `).join('')}
                     </div>
                 </div>
             `).join('');
             document.getElementById('armorList').innerHTML = armorHTML;
+            
+            document.getElementById('popupOverlay').classList.add('visible');
+            document.getElementById('buildPopup').classList.add('visible');
         }
 
         function hideBuildPopup() {
@@ -1803,7 +1949,7 @@
             }
         }
 
-        // NEW - Debug functionality
+        // Debug functionality
         async function loadActivity() {
             const instanceId = document.getElementById('instanceIdInput').value.trim();
             
