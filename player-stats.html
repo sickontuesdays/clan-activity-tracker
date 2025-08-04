@@ -1221,7 +1221,36 @@
             }
 
             activityInstanceId = instanceId;
-            await init();
+            
+            try {
+                showLoading('Loading activity data...');
+
+                console.log('Loading PGCR for instance:', activityInstanceId);
+
+                pgcrData = await getPGCR(activityInstanceId);
+                
+                if (!pgcrData) {
+                    throw new Error('No PGCR data found');
+                }
+
+                if (pgcrData.activityDetails && pgcrData.activityDetails.directorActivityHash) {
+                    try {
+                        activityDefinition = await getActivityDefinition(pgcrData.activityDetails.directorActivityHash);
+                    } catch (error) {
+                        console.warn('Could not load activity definition:', error);
+                    }
+                }
+
+                renderActivityOverview();
+                renderTeamStats();
+                await renderPlayerStats();
+
+                hideLoading();
+
+            } catch (error) {
+                console.error('Initialization failed:', error);
+                showError(`Failed to load activity details: ${error.message}`);
+            }
         }
 
         function displayActivityData(activityData) {
